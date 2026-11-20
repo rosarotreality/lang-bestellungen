@@ -29,7 +29,7 @@ final class Vorlagen
         $t = "NEUE BESTELLUNG {$b['nummer']}\n" . str_repeat('=', 44) . "\n\n";
         $t .= 'Abholung:  ' . Abholung::datumLang($b['datum']) . ", {$b['zeit']} Uhr\n\n";
         $t .= "Kunde:     $name\nTelefon:   {$k['telefon']}\nE-Mail:    {$k['email']}\n\n";
-        $t .= "Positionen:\n" . self::textPositionen($b);
+        $t .= "Positionen:\n" . self::textPositionen($b, true);
         if ($b['anmerkung'] !== '') {
             $t .= "\nAnmerkung des Kunden:\n" . $b['anmerkung'] . "\n";
         }
@@ -73,7 +73,7 @@ final class Vorlagen
         if ($b['anmerkung'] !== '') {
             $t .= "\nIhre Anmerkung:\n" . $b['anmerkung'] . "\n";
         }
-        $t .= "\n" . ($b['ca'] ? "Bei Gewichtsware rechnen wir nach tatsächlichem Gewicht ab. " : '') . ($bt['zahlung_hinweis'] ?? '') . "\n";
+        $t .= "\n" . (!$b['mit_preisen'] ? "Abgerechnet wird bei Abholung nach tatsächlichem Gewicht bzw. Stückzahl. " : ($b['ca'] ? "Bei Gewichtsware rechnen wir nach tatsächlichem Gewicht ab. " : '')) . ($bt['zahlung_hinweis'] ?? '') . "\n";
         $t .= "Änderungen oder Fragen? Rufen Sie uns an: {$bt['telefon']}\n\n";
         $t .= "Bis bald!\nIhre {$bt['name']}\n\n--\n{$bt['name']} · {$bt['strasse']} · {$bt['ort']}\nTelefon {$bt['telefon']} · {$bt['email']}\nImpressum: {$bt['impressum']}\n";
 
@@ -87,7 +87,7 @@ final class Vorlagen
             . self::htmlPositionen($b, false)
             . ($b['anmerkung'] !== '' ? self::anmerkung($b['anmerkung'], 'Ihre Anmerkung') : '')
             . '<p style="font-family:' . self::SANS . ';font-size:13.5px;line-height:1.55;color:' . self::BRAUN . ';margin:18px 0 0;">'
-            . ($b['ca'] ? 'Bei Gewichtsware rechnen wir nach tatsächlichem Gewicht ab. ' : '') . self::e($bt['zahlung_hinweis'] ?? '') . '<br>'
+            . (!$b['mit_preisen'] ? 'Abgerechnet wird bei Abholung nach tatsächlichem Gewicht bzw. Stückzahl. ' : ($b['ca'] ? 'Bei Gewichtsware rechnen wir nach tatsächlichem Gewicht ab. ' : '')) . self::e($bt['zahlung_hinweis'] ?? '') . '<br>'
             . 'Änderungen oder Fragen? Rufen Sie uns an: <a href="tel:' . self::e($tel) . '" style="color:' . self::ROT . ';">' . self::e($bt['telefon']) . '</a></p>'
             . '<p ' . $p . '><br>Bis bald!<br>Ihre ' . self::e($bt['name']) . '</p>';
 
@@ -101,17 +101,26 @@ final class Vorlagen
     }
 
     /* =============== Bausteine =============== */
-    private static function textPositionen(array $b): string
+    private static function preis(array $z): string
+    {
+        return $z['preis'] === null ? '' : ($z['ca'] ? 'ca. ' : '') . self::euro($z['preis']);
+    }
+
+    private static function textPositionen(array $b, bool $mitNr = false): string
     {
         $t = '';
         foreach ($b['zeilen'] as $z) {
-            $t .= '  ' . self::pad($z['menge'], 10) . ' ' . self::pad($z['name'], 28) . ' ' . self::pad(($z['ca'] ? 'ca. ' : '') . self::euro($z['preis']), 13, true) . "\n";
+            $name = ($mitNr && $z['nr'] !== '' ? $z['nr'] . '  ' : '') . $z['name'];
+            $t .= rtrim('  ' . self::pad($z['menge'], 10) . ' ' . self::pad($name, 30) . ' ' . self::pad(self::preis($z), 13, true)) . "\n";
             if ($z['option'] !== '') {
                 $t .= '  ' . str_repeat(' ', 11) . '→ ' . $z['option'] . "\n";
             }
         }
-        $t .= '  ' . str_repeat('-', 54) . "\n";
-        $t .= '  ' . self::pad('Summe', 39) . ' ' . self::pad(($b['ca'] ? 'ca. ' : '') . self::euro($b['summe']), 13, true) . "\n";
+        if (!$b['mit_preisen']) {
+            return $t;
+        }
+        $t .= '  ' . str_repeat('-', 56) . "\n";
+        $t .= '  ' . self::pad('Summe', 41) . ' ' . self::pad(($b['ca'] ? 'ca. ' : '') . self::euro($b['summe']), 13, true) . "\n";
         return $t;
     }
 
@@ -120,18 +129,24 @@ final class Vorlagen
         $th = 'style="font-family:' . self::SANS . ';font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:' . self::BRAUN . ';font-weight:normal;text-align:left;padding:0 8px 8px 0;border-bottom:2px solid ' . self::DUNKEL . ';"';
         $td = 'font-family:' . self::SANS . ';font-size:15px;color:' . self::TEXT . ';padding:11px 8px 11px 0;border-bottom:1px solid ' . self::LINIE . ';vertical-align:top;';
         $h = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">';
-        $h .= '<tr><th ' . $th . '>Menge</th><th ' . $th . '>Artikel</th><th ' . str_replace('text-align:left', 'text-align:right', $th) . '>Preis</th>'
+        $mitPreis = $b['mit_preisen'];
+        $h .= '<tr><th ' . $th . '>Menge</th>' . ($abhaken ? '<th ' . $th . '>Nr.</th>' : '') . '<th ' . str_replace('style="', 'style="width:60%;', $th) . '>Artikel</th>'
+            . ($mitPreis ? '<th ' . str_replace('text-align:left', 'text-align:right', $th) . '>Preis</th>' : '')
             . ($abhaken ? '<th ' . str_replace('padding:0 8px 8px 0', 'padding:0 0 8px 8px', $th) . ' width="22">✓</th>' : '') . '</tr>';
         foreach ($b['zeilen'] as $z) {
             $h .= '<tr>'
                 . '<td style="' . $td . 'white-space:nowrap;font-weight:bold;color:' . self::DUNKEL . ';">' . self::e($z['menge']) . '</td>'
+                . ($abhaken ? '<td style="' . $td . 'white-space:nowrap;color:' . self::BRAUN . ';">' . self::e($z['nr']) . '</td>' : '')
                 . '<td style="' . $td . '">' . self::e($z['name'])
                 . ($z['option'] !== '' ? '<br><span style="font-size:13px;color:' . self::BRAUN . ';">' . self::e($z['option']) . '</span>' : '') . '</td>'
-                . '<td style="' . $td . 'text-align:right;white-space:nowrap;">' . ($z['ca'] ? 'ca. ' : '') . self::euro($z['preis']) . '</td>'
+                . ($mitPreis ? '<td style="' . $td . 'text-align:right;white-space:nowrap;">' . self::preis($z) . '</td>' : '')
                 . ($abhaken ? '<td style="' . $td . 'padding-left:8px;padding-right:0;"><div style="width:16px;height:16px;border:1.5px solid ' . self::BRAUN . ';"></div></td>' : '')
                 . '</tr>';
         }
-        $h .= '<tr><td colspan="2" style="font-family:' . self::SANS . ';font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:' . self::BRAUN . ';padding:14px 8px 0 0;">Summe' . ($b['ca'] ? ' (ca.)' : '') . '</td>'
+        if (!$mitPreis) {
+            return $h . '</table>';
+        }
+        $h .= '<tr><td colspan="' . ($abhaken ? 3 : 2) . '" style="font-family:' . self::SANS . ';font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:' . self::BRAUN . ';padding:14px 8px 0 0;">Summe' . ($b['ca'] ? ' (ca.)' : '') . '</td>'
             . '<td style="font-family:' . self::SERIF . ';font-size:21px;font-weight:bold;color:' . self::DUNKEL . ';text-align:right;white-space:nowrap;padding:10px 8px 0 0;">' . self::euro($b['summe']) . '</td>'
             . ($abhaken ? '<td></td>' : '') . '</tr>';
         return $h . '</table>';

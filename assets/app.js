@@ -52,11 +52,15 @@
 
   /* ---------------- Produkt-Helfer ---------------- */
   const istCa = (p) => p.preis_kg != null;
+  const zeilenPreis = (p, menge) => (hatPreis(p) ? `${istCa(p) ? 'ca. ' : ''}${fmtEuro(preisCent(p, menge))}` : '');
   const einheitLabel = (p) => (p.einheit === 'kg' ? 'kg' : (p.einheit_label || 'Stück'));
 
   // Ganzzahlig in Cent rechnen – identisch zu api/bestellung.php
   const centKg = (p) => Math.round(p.preis_kg * 100);
+  const hatPreis = (p) => p.preis_kg != null || p.preis_stueck != null;
+  let shopHatPreise = true;   // false, solange im Sortiment noch gar keine Preise stehen
   function preisCent(p, menge) {
+    if (!hatPreis(p)) return null;
     if (p.einheit === 'kg') return Math.round((centKg(p) * menge) / 1000);              // €/kg × g
     if (p.preis_stueck != null) return Math.round(p.preis_stueck * 100) * menge;        // fester Stückpreis
     return Math.round((centKg(p) * p.stueckgewicht_g) / 1000) * menge;                  // Stück mit kg-Preis
@@ -72,6 +76,7 @@
   }
 
   function preisZeile(p) {
+    if (!hatPreis(p)) return '';
     if (p.einheit === 'kg') return `<strong>${fmtEuro(Math.round(p.preis_kg * 100))}</strong> / kg`;
     if (p.preis_stueck != null) return `<strong>${fmtEuro(Math.round(p.preis_stueck * 100))}</strong> / ${esc(einheitLabel(p))}`;
     return `<strong>ca. ${fmtEuro(preisCent(p, 1))}</strong> / ${esc(einheitLabel(p))} · ca. ${p.stueckgewicht_g} g · ${fmtEuro(Math.round(p.preis_kg * 100))}/kg`;
@@ -99,6 +104,7 @@
       return;
     }
 
+    shopHatPreise = (shop.produkte || []).some(hatPreis);
     (shop.produkte || []).forEach((p) => {
       p.min = p.min ?? (p.einheit === 'kg' ? 250 : 1);
       p.schritt = p.schritt ?? (p.einheit === 'kg' ? 250 : 1);
@@ -112,7 +118,7 @@
     const hinweis = $('#demo-hinweis');
     if (istTest) {
       hinweis.innerHTML = '<strong>Testmodus</strong> – Bestellungen werden nicht verschickt.'
-        + (shop.demo_hinweis ? ' Sortiment, Preise und Abholzeiten sind Platzhalter.' : '');
+        + (shop.demo_hinweis ? ' Preise, Mengen und Abholzeiten sind noch vorläufig.' : '');
       hinweis.classList.add('demo-hinweis--test');
     }
     hinweis.hidden = !(istTest || shop.demo_hinweis);
@@ -183,7 +189,16 @@
     speicher.schreiben('localStorage', SPEICHER_KORB, { zeit: Date.now(), positionen: korb });
   }
 
-  const korbSumme = () => korb.reduce((s, pos) => s + preisCent(produkte.get(pos.id), pos.menge), 0);
+  const korbSumme = () => korb.reduce((s, pos) => s + (preisCent(produkte.get(pos.id), pos.menge) || 0), 0);
+  const summeText = () => `${korbIstCa() ? 'ca. ' : ''}${fmtEuro(korbSumme())}`;
+  function korbHinweis() {
+    const teile = [];
+    if (korb.some((pos) => !hatPreis(produkte.get(pos.id)))) {
+      teile.push(shopHatPreise ? 'Artikel ohne Preisangabe berechnen wir bei Abholung.' : 'Abgerechnet wird bei Abholung nach tatsächlichem Gewicht bzw. Stückzahl.');
+    } else if (korbIstCa()) teile.push('Bei Gewichtsware rechnen wir nach tatsächlichem Gewicht ab.');
+    teile.push(shop.betrieb.zahlung_hinweis || '');
+    return teile.join(' ');
+  }
   const korbIstCa = () => korb.some((pos) => istCa(produkte.get(pos.id)));
 
   /* ---------------- Rendern: Sortiment ---------------- */
@@ -269,7 +284,7 @@
         const p = produkte.get(pos.id);
         return `<div class="zeile">
           <div class="zeile__name">${esc(p.name)}${pos.option ? `<span class="zeile__option">${esc(pos.option)}</span>` : ''}</div>
-          <div class="zeile__preis">${istCa(p) ? 'ca. ' : ''}${fmtEuro(preisCent(p, pos.menge))}</div>
+          <div class="zeile__preis">${zeilenPreis(p, pos.menge)}</div>
           <div class="zeile__steuerung">
             ${mengeHtml(p, pos.menge, `data-zeile="${i}"`, true)}
             <button class="zeile__entfernen" type="button" data-entfernen="${i}">Entfernen</button>
@@ -277,17 +292,14 @@
         </div>`;
       }).join('');
     }
-    const summe = korbSumme();
-    const ca = korbIstCa();
-    $('#korb-summe').textContent = `${ca ? 'ca. ' : ''}${fmtEuro(summe)}`;
-    $('#korb-hinweis').textContent = korb.length
-      ? `${ca ? 'Bei Gewichtsware rechnen wir nach tatsächlichem Gewicht ab. ' : ''}${shop.betrieb.zahlung_hinweis || ''}`
-      : '';
+    $('#korb-summe').textContent = summeText();
+    $('#korb-summe').parentElement.hidden = !shopHatPreise;
+    $('#korb-hinweis').textContent = korb.length ? korbHinweis() : '';
     $('#zur-kasse').disabled = !korb.length;
 
     const anzahl = korb.length;
     $('#leiste-anzahl').textContent = `${anzahl} ${anzahl === 1 ? 'Position' : 'Positionen'}`;
-    $('#leiste-summe').textContent = `${ca ? 'ca. ' : ''}${fmtEuro(summe)}`;
+    $('#leiste-summe').textContent = shopHatPreise ? summeText() : '';
     leisteAktualisieren();
   }
 
@@ -564,10 +576,12 @@
       return `<div class="zeile zeile--fest">
         <span class="zeile__menge">${esc(mengeText(p, pos.menge))}</span>
         <span class="zeile__name">${esc(p.name)}${pos.option ? `<span class="zeile__option">${esc(pos.option)}</span>` : ''}</span>
-        <span class="zeile__preis">${istCa(p) ? 'ca. ' : ''}${fmtEuro(preisCent(p, pos.menge))}</span>
+        <span class="zeile__preis">${zeilenPreis(p, pos.menge)}</span>
       </div>`;
     }).join('');
     $('#uebersicht-summe').textContent = fmtEuro(korbSumme());
+    $('#uebersicht-summe').parentElement.hidden = !shopHatPreise;
+    $('#zahlung-hinweis').textContent = korbHinweis();
     $('#uebersicht-summe').previousElementSibling.innerHTML = korbIstCa() ? 'Summe <em>ca.</em>' : 'Summe';
   }
 
@@ -689,6 +703,11 @@
     }
   }
 
+  function artikelNr(p, option) {
+    if (p.artikelnr == null) return '';
+    return typeof p.artikelnr === 'object' ? String(p.artikelnr[option] ?? '') : String(p.artikelnr);
+  }
+
   function testNummer() {
     const zeichen = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     const d = new Date();
@@ -703,7 +722,8 @@
     const k = n.kunde;
     const zeilen = korb.map((pos) => {
       const p = produkte.get(pos.id);
-      return `  ${fuell(mengeText(p, pos.menge), 10)} ${fuell(p.name, 28)} ${fuell(`${istCa(p) ? 'ca. ' : ''}${fmtEuro(preisCent(p, pos.menge))}`, 13, true)}`
+      const nr = artikelNr(p, pos.option);
+      return `  ${fuell(mengeText(p, pos.menge), 10)} ${fuell((nr ? nr + '  ' : '') + p.name, 28)} ${fuell(`${zeilenPreis(p, pos.menge)}`, 13, true)}`
         + (pos.option ? `\n             → ${pos.option}` : '');
     }).join('\n');
     const ca = korbIstCa();
@@ -722,7 +742,7 @@
       'Positionen:',
       zeilen,
       `  ${'-'.repeat(54)}`,
-      `  ${fuell('Summe', 39)} ${fuell(`${ca ? 'ca. ' : ''}${fmtEuro(korbSumme())}`, 13, true)}`,
+      ...(shopHatPreise ? [`  ${fuell('Summe', 39)} ${fuell(`${ca ? 'ca. ' : ''}${fmtEuro(korbSumme())}`, 13, true)}`] : []),
       ...(n.anmerkung ? ['', 'Anmerkung des Kunden:', n.anmerkung] : []),
     ].join('\n');
   }

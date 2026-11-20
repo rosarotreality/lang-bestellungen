@@ -45,8 +45,11 @@ function sauber(mixed $wert, int $max, bool $mehrzeilig = false): string
 }
 
 /** Ganzzahlig in Cent rechnen – identisch zu assets/app.js */
-function preisCent(array $p, int $menge): int
+function preisCent(array $p, int $menge): ?int
 {
+    if (!isset($p['preis_kg']) && !isset($p['preis_stueck'])) {
+        return null;   // Artikel ohne Preisangabe
+    }
     if ($p['einheit'] === 'kg') {
         return (int) round((int) round($p['preis_kg'] * 100) * $menge / 1000);
     }
@@ -170,9 +173,10 @@ foreach ($positionen as $pos) {
         'option' => $option,
         'preis'  => $preis,
         'ca'     => $istCa,
+        'nr'     => is_array($p['artikelnr'] ?? null) ? (string) ($p['artikelnr'][$option] ?? '') : (string) ($p['artikelnr'] ?? ''),
         'roh'    => ['id' => $p['id'], 'option' => $option, 'menge' => $menge],
     ];
-    $summe += $preis;
+    $summe += $preis ?? 0;
     $ca = $ca || $istCa;
 }
 
@@ -230,6 +234,7 @@ $bestellung = [
     'zeilen'    => $zeilen,
     'summe'     => $summe,
     'ca'        => $ca,
+    'mit_preisen' => (bool) array_filter($shop['produkte'], fn ($x) => isset($x['preis_kg']) || isset($x['preis_stueck'])),
     'betrieb'   => $shop['betrieb'],
 ];
 

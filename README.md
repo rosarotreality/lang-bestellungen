@@ -59,6 +59,8 @@ Jedes Produkt sieht so aus (die `//`-Kommentare dienen nur zur Erklärung, in de
   "id": "rinderhueftsteak",          // eindeutig, nur a-z, 0-9, Bindestrich
   "kategorie": "rind",               // id aus "kategorien"
   "name": "Rinderhüftsteak",
+  "artikelnr": "310",                // optional, erscheint nur in der Mail an die Metzgerei
+                                     // je Option verschieden: {"heiß": "2032", "kalt": "807"}
   "beschreibung": "Aus der Hüfte …",
   "einheit": "stueck",               // "stueck" oder "kg"
   "preis_kg": 42.90,                 // Kilopreis …
@@ -70,6 +72,7 @@ Jedes Produkt sieht so aus (die `//`-Kommentare dienen nur zur Erklärung, in de
 }
 ```
 
+- **Ohne Preis:** Fehlen `preis_kg` und `preis_stueck`, wird kein Preis angezeigt. Stehen im ganzen Sortiment keine Preise, blendet die Seite auch die Summe aus.
 - **Gewichtsware:** `"einheit": "kg"` mit `preis_kg`. Dann gelten `min`, `schritt` und `max` in **Gramm** (z. B. 250 / 250 / 5000).
 - **Stückware mit festem Preis:** `"einheit": "stueck"` mit `preis_stueck` (optional `"einheit_label": "Paar"`).
 - **Stückware nach Gewicht** (Steaks, Schnitzel): `preis_kg` plus `stueckgewicht_g`. Angezeigt und gemailt wird dann ein ca.-Preis.
