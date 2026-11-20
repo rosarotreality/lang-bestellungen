@@ -1,0 +1,211 @@
+{
+  "_hinweis": "PLATZHALTER – Produkte, Preise, Abholzeiten und Texte sind Beispielwerte und müssen mit der Metzgerei abgestimmt werden. Preise in Euro (Punkt als Dezimaltrenner). Mengen bei einheit 'kg' in Gramm.",
+
+  "demo_hinweis": true,
+
+  "_hinweis_testmodus": "testmodus: 'auto' = auf *.github.io automatisch an (Bestellungen werden nur simuliert), auf dem eigenen Server aus. true/false erzwingt es.",
+  "testmodus": "auto",
+
+  "betrieb": {
+    "name": "Metzgerei Lang",
+    "strasse": "Berghoferstraße 14",
+    "ort": "87527 Sonthofen",
+    "telefon": "08321 2407",
+    "email": "info@lang-partyservice.de",
+    "website": "https://lang-partyservice.de/",
+    "impressum": "https://lang-partyservice.de/impressum/",
+    "datenschutz": "https://lang-partyservice.de/datenschutz/",
+    "zahlung_hinweis": "Bezahlung bei Abholung im Laden (bar oder EC-Karte)."
+  },
+
+  "abholung": {
+    "vorlauf_stunden": 24,
+    "tage_im_voraus": 21,
+    "erster_abholtag": "2026-12-01",
+    "slot_minuten": 30,
+    "oeffnungszeiten": {
+      "mo": [["07:30", "12:30"], ["14:30", "18:00"]],
+      "di": [["07:30", "12:30"], ["14:30", "18:00"]],
+      "mi": [["07:30", "12:30"]],
+      "do": [["07:30", "12:30"], ["14:30", "18:00"]],
+      "fr": [["07:30", "12:30"], ["14:30", "18:00"]],
+      "sa": [["07:00", "12:00"]],
+      "so": []
+    },
+    "geschlossen": ["2026-12-25", "2026-12-26", "2027-01-01", "2027-01-06"]
+  },
+
+  "kategorien": [
+    { "id": "rind", "name": "Rind" },
+    { "id": "schwein", "name": "Schwein" },
+    { "id": "grill", "name": "Grill & Pfanne" },
+    { "id": "wurst", "name": "Wurst & Aufschnitt" },
+    { "id": "brotzeit", "name": "Brotzeit & Spezialitäten" },
+    { "id": "fondue", "name": "Fondue & Raclette" },
+    { "id": "feinkost", "name": "Salate & Feinkost" }
+  ],
+
+  "produkte": [
+    {
+      "id": "rinderhueftsteak", "kategorie": "rind",
+      "name": "Rinderhüftsteak",
+      "beschreibung": "Aus der Hüfte, zart und mager. Ideal für Pfanne und Grill.",
+      "einheit": "stueck", "preis_kg": 42.90, "stueckgewicht_g": 200,
+      "min": 1, "schritt": 1, "max": 20
+    },
+    {
+      "id": "rinderroulade", "kategorie": "rind",
+      "name": "Rinderroulade",
+      "beschreibung": "Aus der Oberschale, dünn geschnitten.",
+      "einheit": "stueck", "preis_kg": 26.90, "stueckgewicht_g": 180,
+      "min": 1, "schritt": 1, "max": 20,
+      "optionen": { "label": "Ausführung", "werte": ["natur", "fertig gefüllt"] }
+    },
+    {
+      "id": "rinderbraten", "kategorie": "rind",
+      "name": "Rinderbraten",
+      "beschreibung": "Aus der Schulter, mit feiner Marmorierung.",
+      "einheit": "kg", "preis_kg": 24.90,
+      "min": 500, "schritt": 250, "max": 5000
+    },
+    {
+      "id": "tafelspitz", "kategorie": "rind",
+      "name": "Tafelspitz",
+      "beschreibung": "Der Klassiker zum Sieden.",
+      "einheit": "kg", "preis_kg": 29.90,
+      "min": 750, "schritt": 250, "max": 4000
+    },
+    {
+      "id": "rinderhack", "kategorie": "rind",
+      "name": "Rinderhackfleisch",
+      "beschreibung": "Frisch am Abholtag gewolft.",
+      "einheit": "kg", "preis_kg": 14.90,
+      "min": 250, "schritt": 250, "max": 5000
+    },
+
+    {
+      "id": "schweinebraten", "kategorie": "schwein",
+      "name": "Schweinebraten",
+      "beschreibung": "Aus der Schulter – für die knusprige Kruste mit Schwarte.",
+      "einheit": "kg", "preis_kg": 13.90,
+      "min": 750, "schritt": 250, "max": 5000,
+      "optionen": { "label": "Schwarte", "werte": ["mit Schwarte", "ohne Schwarte"] }
+    },
+    {
+      "id": "schweineschnitzel", "kategorie": "schwein",
+      "name": "Schweineschnitzel",
+      "beschreibung": "Aus dem Schinken, saftig und mager.",
+      "einheit": "stueck", "preis_kg": 16.90, "stueckgewicht_g": 150,
+      "min": 1, "schritt": 1, "max": 30,
+      "optionen": { "label": "Zuschnitt", "werte": ["natur", "dünn geklopft"] }
+    },
+    {
+      "id": "schweinefilet", "kategorie": "schwein",
+      "name": "Schweinefilet",
+      "beschreibung": "Am Stück, sauber pariert.",
+      "einheit": "kg", "preis_kg": 22.90,
+      "min": 400, "schritt": 100, "max": 3000
+    },
+    {
+      "id": "hack-gemischt", "kategorie": "schwein",
+      "name": "Hackfleisch gemischt",
+      "beschreibung": "Halb Rind, halb Schwein.",
+      "einheit": "kg", "preis_kg": 11.90,
+      "min": 250, "schritt": 250, "max": 5000
+    },
+
+    {
+      "id": "bratwurst-grob", "kategorie": "grill",
+      "name": "Grobe Bratwurst",
+      "beschreibung": "Nach Hausrezept, ca. 120 g.",
+      "einheit": "stueck", "preis_stueck": 1.70,
+      "min": 1, "schritt": 1, "max": 60
+    },
+    {
+      "id": "nackensteak", "kategorie": "grill",
+      "name": "Schweinenackensteak",
+      "beschreibung": "Saftig durchwachsen – natur oder in hauseigener Marinade.",
+      "einheit": "stueck", "preis_kg": 15.90, "stueckgewicht_g": 180,
+      "min": 1, "schritt": 1, "max": 40,
+      "optionen": { "label": "Marinade", "werte": ["natur", "Kräuter", "Paprika"] }
+    },
+
+    {
+      "id": "leberkaese", "kategorie": "wurst",
+      "name": "Leberkäse",
+      "beschreibung": "Hausgemacht, kalt am Stück oder warm in Scheiben.",
+      "einheit": "kg", "preis_kg": 15.90,
+      "min": 200, "schritt": 100, "max": 3000,
+      "optionen": { "label": "Ausführung", "werte": ["kalt am Stück", "warm in Scheiben"] }
+    },
+    {
+      "id": "aufschnitt", "kategorie": "wurst",
+      "name": "Hausgemachter Aufschnitt",
+      "beschreibung": "Bunt gemischt aus unserer Theke.",
+      "einheit": "kg", "preis_kg": 24.90,
+      "min": 100, "schritt": 50, "max": 2000,
+      "optionen": { "label": "Ausführung", "werte": ["geschnitten", "am Stück"] }
+    },
+    {
+      "id": "kochschinken", "kategorie": "wurst",
+      "name": "Gekochter Schinken",
+      "beschreibung": "Mild und saftig.",
+      "einheit": "kg", "preis_kg": 28.90,
+      "min": 100, "schritt": 50, "max": 2000,
+      "optionen": { "label": "Ausführung", "werte": ["geschnitten", "am Stück"] }
+    },
+
+    {
+      "id": "weisswurst", "kategorie": "brotzeit",
+      "name": "Weißwurst",
+      "beschreibung": "Täglich frisch.",
+      "einheit": "stueck", "preis_stueck": 1.50,
+      "min": 2, "schritt": 1, "max": 60
+    },
+    {
+      "id": "landjaeger", "kategorie": "brotzeit",
+      "name": "Allgäuer Landjäger",
+      "beschreibung": "Luftgetrocknet und kräftig geräuchert.",
+      "einheit": "stueck", "einheit_label": "Paar", "preis_stueck": 3.20,
+      "min": 1, "schritt": 1, "max": 30
+    },
+    {
+      "id": "wiener", "kategorie": "brotzeit",
+      "name": "Wiener Würstchen",
+      "beschreibung": "Im Saitling, über Buchenholz geräuchert.",
+      "einheit": "stueck", "einheit_label": "Paar", "preis_stueck": 2.90,
+      "min": 1, "schritt": 1, "max": 30
+    },
+
+    {
+      "id": "fondue", "kategorie": "fondue",
+      "name": "Fondue-Fleisch gemischt",
+      "beschreibung": "Rind, Schwein und Pute, mundgerecht geschnitten. Rechnen Sie mit ca. 200 g pro Person.",
+      "einheit": "kg", "preis_kg": 32.90,
+      "min": 400, "schritt": 100, "max": 5000
+    },
+    {
+      "id": "raclette", "kategorie": "fondue",
+      "name": "Raclette-Fleischplatte",
+      "beschreibung": "Fein geschnittenes Fleisch und Wurst, fertig angerichtet. Ca. 200 g pro Person.",
+      "einheit": "kg", "preis_kg": 27.90,
+      "min": 400, "schritt": 100, "max": 5000,
+      "verfuegbar": false
+    },
+
+    {
+      "id": "kartoffelsalat", "kategorie": "feinkost",
+      "name": "Kartoffelsalat",
+      "beschreibung": "Schwäbisch angemacht, mit Brühe und Essig.",
+      "einheit": "kg", "preis_kg": 8.90,
+      "min": 250, "schritt": 250, "max": 5000
+    },
+    {
+      "id": "fleischsalat", "kategorie": "feinkost",
+      "name": "Fleischsalat",
+      "beschreibung": "Nach Hausrezept.",
+      "einheit": "kg", "preis_kg": 14.90,
+      "min": 150, "schritt": 50, "max": 2000
+    }
+  ]
+}

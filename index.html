@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Online vorbestellen – Metzgerei Lang, Sonthofen</title>
+  <meta name="description" content="Fleisch- und Wurstwaren der Metzgerei Lang online vorbestellen und in Sonthofen abholen.">
+  <!-- Solange die Seite in Arbeit ist: nicht von Suchmaschinen indexieren. Zum Livegang entfernen. -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#26211F">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<a class="skip" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf">
+  <div class="kopf__innen">
+    <a class="kopf__zurueck" href="https://lang-partyservice.de/" data-link="website">
+      <span aria-hidden="true">←</span> Zur Website
+    </a>
+    <a class="kopf__logo" href="https://lang-partyservice.de/" data-link="website" aria-label="Metzgerei Lang – zur Website">
+      <!-- PLATZHALTER: Logo der Metzgerei als assets/logo.gif ablegen (von lang-partyservice.de). -->
+      <img src="assets/logo.gif" alt="Metzgerei Lang Partyservice" width="180" height="137"
+           onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+      <span class="kopf__wortmarke" hidden>Metzgerei <strong>LANG</strong></span>
+    </a>
+    <p class="kicker kopf__tagline">Sonthofen im Allgäu · seit 1938</p>
+  </div>
+</header>
+
+<div class="demo-hinweis" id="demo-hinweis" hidden>
+  Vorschau – Sortiment, Preise und Abholzeiten sind Platzhalter.
+</div>
+
+<main id="inhalt" tabindex="-1">
+
+  <!-- ============ 1. SORTIMENT ============ -->
+  <section class="ansicht" id="ansicht-sortiment" aria-labelledby="titel-sortiment">
+
+    <div class="wrap">
+      <div class="hero">
+        <div class="hero__text">
+          <p class="kicker kicker--hell">Metzgerei Lang</p>
+          <h1 id="titel-sortiment">Online vorbestellen</h1>
+          <span class="balken" aria-hidden="true"></span>
+          <p>Stellen Sie sich Ihre Bestellung aus unserer Theke zusammen und holen Sie sie zum Wunschtermin bei uns im Laden ab – frisch für Sie hergerichtet.</p>
+        </div>
+        <ol class="hero__schritte">
+          <li><span>1</span><div><strong>Auswählen</strong><small>Fleisch, Wurst &amp; Feinkost in den Warenkorb legen</small></div></li>
+          <li><span>2</span><div><strong>Termin wählen</strong><small>Abholtag und Uhrzeit festlegen</small></div></li>
+          <li><span>3</span><div><strong>Abholen</strong><small>im Laden in Sonthofen – bezahlt wird vor Ort</small></div></li>
+        </ol>
+      </div>
+    </div>
+
+    <nav class="kategorien" aria-label="Kategorien">
+      <div class="wrap kategorien__liste" id="kategorien"></div>
+    </nav>
+
+    <div class="wrap layout">
+      <div class="layout__haupt" id="produkte" aria-live="off">
+        <p class="laden">Sortiment wird geladen …</p>
+      </div>
+
+      <aside class="korb" id="korb" aria-labelledby="titel-korb">
+        <div class="korb__kopf">
+          <h2 id="titel-korb">Ihre Bestellung</h2>
+          <button class="korb__schliessen" type="button" data-aktion="korb-zu" aria-label="Warenkorb schließen">×</button>
+        </div>
+        <span class="balken" aria-hidden="true"></span>
+        <div id="korb-inhalt"></div>
+        <div class="korb__fuss">
+          <div class="summe"><span>Summe</span><strong id="korb-summe">0,00 €</strong></div>
+          <p class="klein" id="korb-hinweis"></p>
+          <button class="btn btn--voll" type="button" id="zur-kasse" data-aktion="zur-kasse" disabled>Weiter zum Abholtermin</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ 2. KASSE ============ -->
+  <section class="ansicht" id="ansicht-kasse" aria-labelledby="titel-kasse" hidden>
+    <div class="wrap">
+      <button class="link-zurueck" type="button" data-aktion="zum-sortiment"><span aria-hidden="true">←</span> Weiter einkaufen</button>
+      <h1 id="titel-kasse" class="seitentitel">Abholung &amp; Kontakt</h1>
+      <span class="balken" aria-hidden="true"></span>
+    </div>
+
+    <form class="wrap layout" id="bestellformular" novalidate>
+      <div class="layout__haupt">
+
+        <fieldset class="karte">
+          <legend class="karte__titel"><span class="nr">1</span> Abholtag</legend>
+          <div class="tage" id="tage" role="radiogroup" aria-label="Abholtag"></div>
+          <p class="feldfehler" id="fehler-datum" hidden></p>
+
+          <div id="zeit-block" hidden>
+            <h3 class="kicker abstand-oben">Uhrzeit</h3>
+            <div class="zeiten" id="zeiten" role="radiogroup" aria-label="Abholzeit"></div>
+            <p class="feldfehler" id="fehler-zeit" hidden></p>
+          </div>
+        </fieldset>
+
+        <fieldset class="karte">
+          <legend class="karte__titel"><span class="nr">2</span> Ihre Kontaktdaten</legend>
+          <div class="felder">
+            <label class="feld">
+              <span>Vorname *</span>
+              <input name="vorname" autocomplete="given-name" maxlength="60" required>
+              <small class="feldfehler" hidden></small>
+            </label>
+            <label class="feld">
+              <span>Nachname *</span>
+              <input name="nachname" autocomplete="family-name" maxlength="60" required>
+              <small class="feldfehler" hidden></small>
+            </label>
+            <label class="feld">
+              <span>Telefon * <em>für Rückfragen</em></span>
+              <input name="telefon" type="tel" autocomplete="tel" maxlength="30" required>
+              <small class="feldfehler" hidden></small>
+            </label>
+            <label class="feld">
+              <span>E-Mail * <em>für die Bestätigung</em></span>
+              <input name="email" type="email" autocomplete="email" maxlength="120" required>
+              <small class="feldfehler" hidden></small>
+            </label>
+            <label class="feld feld--breit">
+              <span>Anmerkung <em>optional</em></span>
+              <textarea name="anmerkung" rows="3" maxlength="500" placeholder="z. B. Steaks bitte 3 cm dick schneiden"></textarea>
+              <small class="feldfehler" hidden></small>
+            </label>
+            <!-- Spam-Schutz: Dieses Feld bleibt für Menschen unsichtbar und leer. -->
+            <label class="honig" aria-hidden="true">Website <input name="website" tabindex="-1" autocomplete="off"></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <aside class="karte uebersicht" aria-labelledby="titel-uebersicht">
+        <h2 class="karte__titel" id="titel-uebersicht"><span class="nr">3</span> Übersicht</h2>
+        <div id="uebersicht-liste"></div>
+        <div class="summe"><span>Summe <em>ca.</em></span><strong id="uebersicht-summe">0,00 €</strong></div>
+        <dl class="uebersicht__termin" id="uebersicht-termin" hidden>
+          <dt>Abholung</dt><dd id="uebersicht-termin-text"></dd>
+        </dl>
+        <p class="klein" id="zahlung-hinweis"></p>
+        <p class="klein">Mit Absenden der Bestellung verarbeiten wir Ihre Angaben zur Abwicklung Ihrer Bestellung. Mehr dazu in der <a href="https://lang-partyservice.de/datenschutz/" data-link="datenschutz" target="_blank" rel="noopener">Datenschutzerklärung</a>.</p>
+        <div class="formfehler" id="formfehler" role="alert" hidden></div>
+        <button class="btn btn--voll" type="submit" id="absenden">Zahlungspflichtig bestellen</button>
+      </aside>
+    </form>
+  </section>
+
+  <!-- ============ 3. DANKE ============ -->
+  <section class="ansicht" id="ansicht-danke" aria-labelledby="titel-danke" hidden>
+    <div class="wrap wrap--schmal">
+      <div class="karte danke">
+        <p class="kicker">Bestellung eingegangen</p>
+        <h1 id="titel-danke">Vielen Dank!</h1>
+        <span class="balken" aria-hidden="true"></span>
+        <p id="danke-text"></p>
+        <dl class="danke__daten">
+          <dt>Bestellnummer</dt><dd id="danke-nr"></dd>
+          <dt>Abholung</dt><dd id="danke-termin"></dd>
+          <dt>Wo</dt><dd id="danke-adresse"></dd>
+        </dl>
+        <p class="klein" id="danke-mail"></p>
+        <details class="testvorschau" id="test-vorschau" hidden>
+          <summary>Testmodus: So käme die Bestellung bei der Metzgerei an</summary>
+          <pre></pre>
+        </details>
+        <div class="danke__aktionen">
+          <a class="btn" href="https://lang-partyservice.de/" data-link="website">Zur Website</a>
+          <button class="btn btn--hell" type="button" data-aktion="neu">Neue Bestellung</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Mobile: Warenkorb-Leiste -->
+<div class="leiste" id="leiste" hidden>
+  <div class="leiste__info"><span id="leiste-anzahl">0 Artikel</span><strong id="leiste-summe">0,00 €</strong></div>
+  <button class="btn" type="button" data-aktion="korb-auf">Warenkorb</button>
+</div>
+<div class="abdunkeln" id="abdunkeln" data-aktion="korb-zu" hidden></div>
+
+<footer class="fuss">
+  <div class="fuss__kontakt">
+    <h2>Besuchen Sie uns</h2>
+    <div class="wrap fuss__spalten">
+      <div>
+        <h3 class="kicker kicker--sand">Adresse</h3>
+        <p id="fuss-adresse">Metzgerei Lang<br>Berghoferstraße 14<br>87527 Sonthofen</p>
+      </div>
+      <div>
+        <h3 class="kicker kicker--sand">Kontakt</h3>
+        <p id="fuss-kontakt">Telefon 08321 2407<br><a href="mailto:info@lang-partyservice.de">info@lang-partyservice.de</a></p>
+      </div>
+      <div>
+        <h3 class="kicker kicker--sand">Abholzeiten</h3>
+        <p id="fuss-zeiten">–</p>
+      </div>
+    </div>
+  </div>
+  <nav class="fuss__leiste" aria-label="Rechtliches">
+    <a href="https://lang-partyservice.de/" data-link="website">Website</a>
+    <a href="https://lang-partyservice.de/impressum/" data-link="impressum">Impressum</a>
+    <a href="https://lang-partyservice.de/datenschutz/" data-link="datenschutz">Datenschutz</a>
+  </nav>
+</footer>
+
+<div class="sr-only" id="ansage" aria-live="polite"></div>
+
+<noscript>
+  <div class="noscript">Für die Online-Bestellung wird JavaScript benötigt. Gerne nehmen wir Ihre Bestellung auch telefonisch unter 08321 2407 entgegen.</div>
+</noscript>
+
+<script src="assets/app.js" defer></script>
+</body>
+</html>
