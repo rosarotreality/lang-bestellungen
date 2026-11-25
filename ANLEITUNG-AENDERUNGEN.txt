@@ -1,0 +1,635 @@
+====================================================================
+  BESTELLSEITE METZGEREI LANG – WAS ÄNDERE ICH WO?
+  Stand: 25.11.2026 · Seite: https://bestellen-lang.de
+  Repo:  github.com/rosarotreality/bestellseite-lang
+====================================================================
+
+INHALT
+  0. Grundprinzip: So kommt eine Änderung online
+  1. Regeln für shop.json (wichtig, sonst geht die Seite kaputt)
+  2. Abholtage, Uhrzeiten, Bestellschluss, Feiertage
+  3. Waren: Produkte hinzufügen, ändern, ausblenden, löschen
+  4. Kategorien
+  5. Preise eintragen
+  6. Hinweise über dem Sortiment / Vorschau-Balken
+  7. Betriebsdaten (Adresse, Telefon, Impressum, Zahlungshinweis)
+  8. Mails: Empfänger, Absender, Antwortadresse, Bestätigung an/aus
+  9. Mail-Zugang (Brevo / SMTP) ändern
+ 10. Texte auf der Seite (Überschrift, Knöpfe, Danke-Text …)
+ 11. Texte in den Mails
+ 12. Farben, Schriften, Logo, Favicon
+ 13. Sonstiges: Warenkorb-Dauer, Spam-Schutz, Testmodus, Domain
+ 14. Nach jeder Änderung: Kurz-Check
+ 15. Wenn etwas nicht klappt
+
+
+====================================================================
+0. GRUNDPRINZIP: SO KOMMT EINE ÄNDERUNG ONLINE
+====================================================================
+
+Es gibt nur ZWEI Orte, an denen du etwas änderst:
+
+  A) DATEIEN im GitHub-Repo  → Sortiment, Tage, Preise, Texte, Design
+  B) UMGEBUNGSVARIABLEN in Coolify → alles rund um Mails & Zugangsdaten
+
+--- A) Datei auf GitHub ändern ---------------------------------------
+  1. github.com/rosarotreality/bestellseite-lang öffnen
+  2. Zur Datei klicken (z. B. Ordner "data" → "shop.json")
+  3. Oben rechts auf das STIFT-Symbol ("Edit this file")
+  4. Ändern. Suchen geht mit Strg + F (im Editor klicken, dann Strg + F)
+  5. Oben rechts grüner Knopf "Commit changes…" → im Fenster nochmal
+     "Commit changes"
+  6. Coolify baut die Seite danach normalerweise AUTOMATISCH neu
+     (1–3 Minuten). Falls sich nach 5 Minuten nichts tut:
+     Coolify → Projekt "Metzgerei Lang" → Anwendung → oben "Redeploy"
+  7. Seite im Browser neu laden (am besten Strg + F5)
+
+--- B) Umgebungsvariable in Coolify ändern ---------------------------
+  1. app.coolify.io → Projekt "Metzgerei Lang" → production → Anwendung
+  2. Links im Menü: "Environment Variables"
+  3. "Developer view" anklicken → Wert ändern → "Save"
+  4. Oben rechts "Redeploy" (oder "Restart") – ERST DANN gilt der neue Wert!
+
+Tipp: Vor größeren Änderungen eine Kopie der Datei auf dem Rechner
+speichern (auf GitHub: Datei öffnen → Download-Symbol "Download raw file").
+Auf GitHub kann man außerdem jede frühere Version wiederherstellen
+(Datei öffnen → "History").
+
+
+====================================================================
+1. REGELN FÜR shop.json  (Datei: data/shop.json)
+====================================================================
+
+shop.json ist eine JSON-Datei. Ein einziger Tippfehler (fehlendes Komma,
+fehlendes Anführungszeichen) und das Sortiment lädt nicht mehr.
+
+  - Texte IMMER in "doppelten Anführungszeichen"
+  - Zahlen OHNE Anführungszeichen:      "min": 250
+  - Dezimalzahlen mit PUNKT, nicht Komma: "preis_kg": 24.90
+  - Zwischen Einträgen steht ein Komma …
+  - … aber NACH dem letzten Eintrag einer Liste/eines Blocks KEIN Komma
+  - Wahr/Falsch ohne Anführungszeichen:  true / false
+  - "Nichts" ohne Anführungszeichen:      null
+  - Datum immer so: "2026-12-23"  (Jahr-Monat-Tag)
+  - Uhrzeit immer so: "07:00"     (zweistellig, mit Doppelpunkt)
+  - Keine Kommentare (// …) in die Datei schreiben!
+
+Einträge, die mit "_hinweis" beginnen, sind nur Notizen für dich –
+die Seite ignoriert sie.
+
+SICHERHEITSCHECK vor dem "Commit":
+  Kompletten Inhalt kopieren → auf https://jsonlint.com einfügen →
+  "Validate JSON". Steht dort "Valid JSON", ist alles gut.
+  Nach dem Deploy: https://bestellen-lang.de/api/status.php muss
+  "sortiment_geladen": true zeigen.
+
+
+====================================================================
+2. ABHOLTAGE, UHRZEITEN, BESTELLSCHLUSS, FEIERTAGE
+   (Datei: data/shop.json → Block "abholung")
+====================================================================
+
+So sieht der Block aus (Stand jetzt):
+
+  "abholung": {
+    "vorlauf_stunden": 24,
+    "erster_abholtag": "2026-12-15",
+    "tage_im_voraus": 16,
+    "abholtage": {},
+    "bestellschluss": null,
+    "slot_minuten": 30,
+    "oeffnungszeiten": {
+      "mo": [["07:00", "13:30"]],
+      "di": [["07:00", "13:30"]],
+      "mi": [["07:00", "13:30"]],
+      "do": [["07:00", "13:30"]],
+      "fr": [["07:00", "13:30"]],
+      "sa": [],
+      "so": []
+    },
+    "geschlossen": ["2026-12-25", "2026-12-26", "2027-01-01", "2027-01-06"]
+  },
+
+Was bedeutet was?
+
+  vorlauf_stunden   Wie viele Stunden vorher MINDESTENS bestellt werden muss.
+                    24 = Wer heute um 10 Uhr bestellt, kann frühestens
+                    morgen ab 10 Uhr abholen.
+
+  erster_abholtag   Vor diesem Tag kann nichts abgeholt werden
+                    (z. B. Neueröffnung). null = ab sofort.
+
+  tage_im_voraus    Wie viele Tage ab dem ersten Abholtag wählbar sind.
+
+  abholtage         FESTE Abholtage. Wenn hier etwas steht, gelten NUR
+                    diese Tage (erster_abholtag/tage_im_voraus werden dann
+                    ignoriert). {} = nicht benutzt.
+
+  bestellschluss    Ab diesem Zeitpunkt ist die Bestellung gesperrt.
+                    Die Seite zeigt dann einen roten Balken mit der
+                    Telefonnummer. Der Bestellschluss wird auch oben als
+                    Hinweis angezeigt. null = kein Bestellschluss.
+
+  slot_minuten      Abstand der wählbaren Uhrzeiten (30 = 07:00, 07:30 …)
+
+  oeffnungszeiten   Zeitfenster pro Wochentag (mo di mi do fr sa so).
+                    Mehrere Fenster pro Tag möglich (Mittagspause).
+                    [] = an diesem Wochentag keine Abholung.
+                    Die letzte wählbare Uhrzeit ist "bis" minus slot_minuten
+                    (bei 13:30 und 30 Minuten also 13:00).
+
+  geschlossen       Tage, an denen NIE abgeholt werden kann (Feiertage,
+                    Urlaub) – gilt auch für feste Abholtage.
+
+--- BEISPIEL 1: Nur 22., 23. und 24.12., an Heiligabend nur bis 11 Uhr ---
+    "abholtage": {
+      "2026-12-22": [],
+      "2026-12-23": [],
+      "2026-12-24": [["07:00", "11:00"]]
+    },
+  [] heißt: normale Öffnungszeit dieses Wochentags verwenden.
+  Eigene Zeiten so: [["07:00", "11:00"]]
+
+--- BEISPIEL 2: Bestellschluss Samstag 19.12. um 12 Uhr ---
+    "bestellschluss": "2026-12-19T12:00",
+  (Format: Datum, großes T, Uhrzeit – deutsche Zeit)
+
+--- BEISPIEL 3: Mittagspause dienstags ---
+    "di": [["07:00", "12:00"], ["14:00", "18:00"]],
+
+--- BEISPIEL 4: Samstags 7–12 Uhr Abholung ---
+    "sa": [["07:00", "12:00"]],
+
+--- BEISPIEL 5: Viertelstunden-Takt ---
+    "slot_minuten": 15,
+
+--- BEISPIEL 6: Zusätzlicher Schließtag 31.12. ---
+    "geschlossen": ["2026-12-25", "2026-12-26", "2026-12-31", "2027-01-01", "2027-01-06"]
+
+--- Nach Weihnachten: Bestellung komplett stoppen ---
+    "bestellschluss": "2026-12-23T13:30",
+  (Zeitpunkt in der Vergangenheit = sofort gesperrt)
+
+
+====================================================================
+3. WAREN: PRODUKTE HINZUFÜGEN, ÄNDERN, AUSBLENDEN, LÖSCHEN
+   (Datei: data/shop.json → Liste "produkte")
+====================================================================
+
+Jedes Produkt ist EINE Zeile in geschweiften Klammern { … }, Beispiel:
+
+  {"id": "rinderbraten", "kategorie": "rind", "name": "Rinderbraten", "einheit": "kg", "min": 500, "schritt": 250, "max": 10000, "notiz_hinweis": "Welches Teilstück? Für wie viele Personen?"},
+
+Alle möglichen Felder:
+
+  "id"             PFLICHT. Eindeutiger Kurzname, nur a–z, 0–9 und
+                   Bindestrich, keine Umlaute/Leerzeichen.
+                   Darf kein zweites Mal vorkommen.
+                   (Nach dem Livegang besser nicht mehr ändern – sonst
+                   verschwindet das Produkt aus offenen Warenkörben.)
+
+  "kategorie"      PFLICHT. Die id einer Kategorie (siehe Abschnitt 4):
+                   rind, schwein, kalb, gefluegel, lamm-wild, sossen, salate, wurst
+
+  "name"           PFLICHT. So steht es auf der Seite und in der Mail.
+
+  "beschreibung"   Optional. Kleiner Text unter dem Namen.
+
+  "einheit"        PFLICHT. "kg" oder "stueck"
+                   - "kg": Mengen in GRAMM. Kunden können jede Grammzahl
+                     zwischen min und max selbst eintippen.
+                   - "stueck": Mengen in Stück (nur über +/−)
+
+  "einheit_label"  Optional, nur bei "stueck": anderes Wort statt "Stück",
+                   z. B. "Paar", "Becher", "Glas", "Person"
+  "einheit_label_mehrzahl"
+                   Optional: Mehrzahl, falls anders als Einzahl,
+                   z. B. "einheit_label": "Person", "einheit_label_mehrzahl": "Personen"
+                   → "1 Person", "4 Personen"
+
+  "min"            Kleinste bestellbare Menge (Gramm bzw. Stück)
+  "schritt"        Um wie viel der +/− Knopf erhöht (Gramm bzw. Stück)
+  "max"            Größte bestellbare Menge
+                   Bei Stückware gilt: min + n × schritt muss max treffen
+                   (z. B. min 1, schritt 1, max 40 ✔)
+  "start"          Optional, nur bei "kg": vorausgewählte Grammzahl auf der
+                   Produktkarte (z. B. 1000 bei Braten, 400 bei Fondue).
+                   Ohne "start" ist min vorausgewählt.
+
+  "optionen"       Optional. Auswahlfeld, z. B.:
+                   "optionen": {"label": "Ausführung", "werte": ["ganze Gans", "Gänsebrust", "Gänsekeule"]}
+                   Der erste Wert ist vorausgewählt.
+
+  "notiz_hinweis"  Optional. Grauer Beispieltext im Notizfeld der
+                   Warenkorbzeile (z. B. "Ganz oder zerlegt?")
+
+  "verfuegbar"     Optional. false = ausgegraut, "Derzeit nicht verfügbar".
+                   Weglassen oder true = bestellbar.
+
+  "bild"           Optional. Pfad zu einem Foto, z. B. "assets/produkte/gans.jpg"
+                   (Datei vorher in den Ordner assets/produkte hochladen,
+                   quadratisch, ca. 400×400 px, JPG)
+
+  "artikelnr"      Optional. Erscheint NUR in der Mail an die Metzgerei
+                   (eigene Spalte "Nr."). Bei Optionen unterschiedlich:
+                   "artikelnr": {"heiß": "2032", "kalt": "807"}
+
+  "preis_kg" / "preis_stueck" / "stueckgewicht_g" → siehe Abschnitt 5
+
+--- PRODUKT HINZUFÜGEN ---
+  1. Eine bestehende Produktzeile der gleichen Art kopieren
+  2. Direkt darunter einfügen
+  3. "id" und "name" ändern (id muss neu/eindeutig sein!)
+  4. Komma am Zeilenende prüfen: jede Produktzeile endet mit },
+     NUR die allerletzte Produktzeile der Liste endet mit } (ohne Komma)
+  Die Reihenfolge in der Datei = Reihenfolge auf der Seite.
+
+  Beispiel neues Produkt (Stück, mit Auswahl):
+  {"id": "rehkeule", "kategorie": "lamm-wild", "name": "Rehkeule", "einheit": "stueck", "min": 1, "schritt": 1, "max": 10, "optionen": {"label": "Ausführung", "werte": ["mit Knochen", "ohne Knochen"]}},
+
+  Beispiel neues Produkt (nach Gewicht, Gramm frei eingebbar):
+  {"id": "kalbsbraten", "kategorie": "kalb", "name": "Kalbsbraten", "einheit": "kg", "min": 100, "schritt": 250, "max": 10000, "start": 1000},
+
+  Beispiel Becher mit Größen:
+  {"id": "kraeutersosse", "kategorie": "sossen", "name": "Kräutersoße", "einheit": "stueck", "einheit_label": "Becher", "min": 1, "schritt": 1, "max": 30, "optionen": {"label": "Bechergröße", "werte": ["150 g", "250 g", "500 g"]}},
+
+--- PRODUKT VORÜBERGEHEND AUSBLENDEN (ausverkauft) ---
+  In der Zeile ergänzen:  "verfuegbar": false
+  z. B. {"id": "gans", …, "max": 20, "verfuegbar": false, "optionen": …}
+  Wieder freischalten: false → true (oder Feld löschen)
+
+--- PRODUKT ENDGÜLTIG LÖSCHEN ---
+  Ganze Zeile löschen. Danach Komma der neuen letzten Zeile prüfen.
+
+--- NAMEN / MENGEN ÄNDERN ---
+  Einfach den Wert in der Zeile überschreiben.
+
+
+====================================================================
+4. KATEGORIEN  (Datei: data/shop.json → Liste "kategorien")
+====================================================================
+
+  "kategorien": [
+    {"id": "rind", "name": "Rindfleisch"},
+    {"id": "schwein", "name": "Schweinefleisch"},
+    …
+  ]
+
+  - "name" = Überschrift auf der Seite und im Menü oben → frei änderbar
+  - "id"   = Verknüpfung zu den Produkten ("kategorie": "rind")
+    Aktuell: rind, schwein, kalb, gefluegel, lamm-wild, sossen, salate, wurst
+  - Reihenfolge hier = Reihenfolge auf der Seite
+  - Neue Kategorie: Zeile kopieren, neue id + name, Produkte mit
+    "kategorie": "neue-id" anlegen
+  - Kategorien ohne Produkte werden automatisch nicht angezeigt
+
+
+====================================================================
+5. PREISE EINTRAGEN  (Datei: data/shop.json → bei jedem Produkt)
+====================================================================
+
+Aktuell sind KEINE Preise eingetragen – so ist es gewollt, abgerechnet
+wird vor Ort bei Abholung. Dieser Abschnitt ist nur für den Fall, dass
+sich das später einmal ändert. Dann zeigt die Seite keine
+Preise und keine Summe, sondern "Abgerechnet wird bei Abholung …".
+Sobald MINDESTENS EIN Produkt einen Preis hat, erscheinen Preise und
+Summe automatisch.
+
+Drei Möglichkeiten pro Produkt:
+
+  a) Ware nach Gewicht (einheit "kg") → Kilopreis
+     "preis_kg": 24.90
+     Seite zeigt: "24,90 € / kg", rechnet Menge × Preis, "ca."-Preis
+
+  b) Stückware mit festem Preis (einheit "stueck")
+     "preis_stueck": 3.20
+     Seite zeigt: "3,20 € / Paar" (bzw. Stück/Becher …)
+
+  c) Stückware, die nach Gewicht abgerechnet wird (Steak, Schnitzel, Ente)
+     "preis_kg": 42.90, "stueckgewicht_g": 200
+     Seite zeigt: "ca. 8,58 € / Stück · ca. 200 g · 42,90 €/kg"
+
+  Beispiel:
+  {"id": "rindersteaks", "kategorie": "rind", "name": "Rindersteaks", "einheit": "stueck", "min": 1, "schritt": 1, "max": 40, "preis_kg": 42.90, "stueckgewicht_g": 200, "notiz_hinweis": "Welche Steaks? Gewünschte Dicke?"},
+
+  WICHTIG:
+  - Punkt statt Komma: 24.90 (NICHT 24,90)
+  - Keine Anführungszeichen um Preise, kein €-Zeichen
+  - Am besten ALLE Produkte bepreisen. Produkte ohne Preis zeigen dann
+    keinen Preis, und unter dem Warenkorb steht
+    "Artikel ohne Preisangabe berechnen wir bei Abholung."
+  - Der Server rechnet die Preise selbst aus shop.json – die Mail an die
+    Metzgerei enthält dann auch Preise und Summe.
+
+
+====================================================================
+6. HINWEISE ÜBER DEM SORTIMENT / VORSCHAU-BALKEN
+   (Datei: data/shop.json)
+====================================================================
+
+--- Hinweis-Kasten (weiß mit rotem Rand, unter dem dunklen Kasten) ---
+  "hinweise": [
+    "Das restliche Wurstsortiment können Sie am Abholtag bei uns im Laden einkaufen.",
+    "Artikel, die nicht auf der Bestellliste stehen, fragen Sie gerne telefonisch an: <a href=\"tel:083212407\">08321 2407</a>."
+  ],
+  - Jede Zeile = ein Absatz. Komma zwischen den Zeilen, nicht nach der letzten.
+  - Anführungszeichen INNERHALB des Textes mit Backslash: \"
+  - Fett: <strong>Wort</strong>
+  - Kasten ausblenden: "hinweise": []
+
+--- Gelber Vorschau-Balken ganz oben ---
+  "demo_hinweis": false   → aus (jetzt)
+  "demo_hinweis": true    → "Vorschau – Preise, Mengen und Abholzeiten sind noch vorläufig."
+
+
+====================================================================
+7. BETRIEBSDATEN  (Datei: data/shop.json → Block "betrieb")
+====================================================================
+
+  "betrieb": {
+    "name": "Metzgerei Lang",
+    "strasse": "Berghofer Str. 14",
+    "ort": "87527 Sonthofen",
+    "telefon": "08321 2407",
+    "email": "info@lang-partyservice.de",
+    "website": "https://lang-partyservice.de/",
+    "impressum": "https://lang-partyservice.de/impressum/",
+    "datenschutz": "https://lang-partyservice.de/datenschutz/",
+    "zahlung_hinweis": "Bezahlt wird bei Abholung im Laden."
+  },
+
+  Wird verwendet für:
+  - Adresszeile unter dem Logo
+  - "Zur Website"-Link oben links und im Footer
+  - Footer (Adresse, Telefon, Mail, Abholzeiten)
+  - Links "Impressum" und "Datenschutz" (Footer + Bestellformular)
+  - Danke-Seite, Kunden-Bestätigungsmail
+  - zahlung_hinweis: unter dem Warenkorb, in der Übersicht, in Mails
+
+  Die Telefonnummer ist automatisch anklickbar (auf dem Handy: anrufen).
+  ACHTUNG: Die Nummer steht zusätzlich als Text in "hinweise" (Abschnitt 6)
+  – dort bei Änderung auch anpassen.
+
+
+====================================================================
+8. MAILS: EMPFÄNGER, ABSENDER, ANTWORTADRESSE, BESTÄTIGUNG
+   (Coolify → Anwendung → Environment Variables → danach REDEPLOY)
+====================================================================
+
+  MAIL_EMPFAENGER       Wohin die Bestellungen gehen.
+                        Jetzt: pirmin.lang@hotmail.de
+                        Ändern z. B. auf: info@lang-partyservice.de
+                        (Nur EINE Adresse möglich. Für mehrere Empfänger
+                        muss der Code erweitert werden.)
+
+  MAIL_ABSENDER         Von welcher Adresse die Mails kommen.
+                        Jetzt: bestellung@bestellen-lang.de
+                        ACHTUNG: Muss in Brevo unter "Senders, domains, IPs"
+                        → "Absender" angelegt und VERIFIZIERT sein, und die
+                        Domain muss in Brevo authentifiziert sein.
+                        Sonst wird nichts verschickt oder es landet im Spam.
+
+  MAIL_ABSENDER_NAME    Angezeigter Name des Absenders.
+                        Standard (wenn nicht gesetzt): Metzgerei Lang
+
+  MAIL_ANTWORT_AN       Wenn ein KUNDE auf seine Bestätigungsmail antwortet,
+                        geht die Antwort hierhin.
+                        Jetzt: info@lang-partyservice.de
+                        (Antworten auf die Bestell-Mail an die Metzgerei
+                        gehen automatisch an den Kunden.)
+
+  KUNDEN_BESTAETIGUNG   0 = Kunden bekommen KEINE Bestätigungsmail
+                        1 oder nicht gesetzt = Kunden bekommen eine
+
+  Nach JEDER Änderung: Save → Redeploy → Testbestellung → Junk-Ordner prüfen.
+
+
+====================================================================
+9. MAIL-ZUGANG (BREVO / SMTP) ÄNDERN
+   (Coolify → Environment Variables → danach REDEPLOY)
+====================================================================
+
+  SMTP_HOST         smtp-relay.brevo.com
+  SMTP_PORT         587
+  SMTP_SICHERHEIT   tls        (bei Port 465: ssl)
+  SMTP_BENUTZER     Login aus Brevo → Einstellungen → "SMTP & API" →
+                    Reiter "SMTP" (aktuell c4cd02001@smtp-brevo.com)
+  SMTP_PASSWORT     SMTP-Schlüssel aus Brevo (wird nur EINMAL angezeigt)
+
+--- Neuen Brevo-Schlüssel einsetzen (z. B. falls alter verloren) ---
+  1. Brevo → SMTP & API → Reiter SMTP → "Generate SMTP key"
+  2. Neuen Schlüssel kopieren
+  3. Coolify: SMTP_PASSWORT ersetzen → Save → Redeploy
+  4. Testbestellung
+  5. Danach in Brevo den alten Schlüssel löschen
+
+--- Umstieg auf das Postfach der Metzgerei (z. B. info@lang-partyservice.de) ---
+  Vom Mailanbieter der Metzgerei brauchst du: SMTP-Server, Port,
+  Benutzername, Passwort. Dann in Coolify:
+    SMTP_HOST, SMTP_PORT, SMTP_SICHERHEIT, SMTP_BENUTZER, SMTP_PASSWORT
+    MAIL_ABSENDER = info@lang-partyservice.de (muss zum Postfach passen)
+  → Save → Redeploy → Testbestellung.
+
+--- Prüfen, ob alles gesetzt ist ---
+  https://bestellen-lang.de/api/status.php
+  Alle Werte müssen true sein. (Die Seite zeigt keine Passwörter.)
+
+--- Fehlersuche ---
+  Variable DEBUG = 1 setzen → Redeploy → Bestellung abschicken →
+  im Browser F12 → Reiter "Netzwerk" → "bestellung.php" → "Antwort":
+  dort steht die genaue Fehlermeldung. Danach DEBUG WIEDER LÖSCHEN.
+  In Brevo: "Transactional" → "Logs" zeigt, ob Mails rausgingen.
+
+
+====================================================================
+10. TEXTE AUF DER SEITE
+====================================================================
+
+Tipp: Im GitHub-Editor mit Strg + F nach dem bisherigen Text suchen
+und nur den Text zwischen den spitzen Klammern > … < ändern.
+Die Teile in < > (HTML) nicht anfassen.
+
+--- Datei: index.html ---
+  Tab-Titel im Browser        <title>Weihnachtsbestellung – Metzgerei Lang, Sonthofen</title>
+  Google-Beschreibung         <meta name="description" content="…">
+  Kleine Zeile über Überschrift  Weihnachten 2026
+  Große Überschrift           Ihre Weihnachts&shy;bestellung
+                              (&shy; = erlaubte Trennstelle fürs Handy,
+                              kann stehen bleiben oder weg)
+  Einleitungstext             Stellen Sie sich Ihren Festtagsbraten, …
+  Die 3 Schritte              <strong>Auswählen</strong><small>Fleisch, Geflügel …</small>
+                              <strong>Termin wählen</strong><small>…</small>
+                              <strong>Abholen</strong><small>…</small>
+  Knopf unter dem Warenkorb   Weiter zum Abholtermin
+  Überschrift Kasse           Abholung &amp; Kontakt   (&amp; = &)
+  Feld-Beschriftungen         Vorname *, Nachname *, Straße und Hausnummer * …
+  Platzhalter Anmerkung       placeholder="Weitere Wünsche zu Ihrer Bestellung"
+  Datenschutzhinweis          Mit Absenden der Bestellung verarbeiten wir …
+  Bestell-Knopf               Zahlungspflichtig bestellen
+                              (ACHTUNG: steht auch in assets/app.js, s. u.)
+  Danke-Seite oben            Bestellung eingegangen
+  Footer-Überschrift          Besuchen Sie uns
+  Footer-Spalte               Abholzeiten
+
+--- Datei: assets/app.js (Vorsicht: nur Text in '…' oder `…` ändern) ---
+  Bestell-Knopf (nach Absenden)  knopf.textContent = 'Zahlungspflichtig bestellen';
+                                 → gleich lautend wie in index.html halten!
+  Produkt-Knopf                  In den Korb   (kommt 2× vor, beide ändern)
+  Leerer Warenkorb               Noch nichts ausgewählt. Legen Sie …
+  Notiz-Platzhalter (Standard)   'Notiz, z. B. Zuschnitt oder Personenzahl'
+  Hinweise unter dem Warenkorb   'Abgerechnet wird bei Abholung nach …'
+                                 'Artikel ohne Preisangabe berechnen wir …'
+                                 'Bei Gewichtsware rechnen wir nach …'
+  Danke-Überschrift              `Vielen Dank, ${nutzlast.kunde.vorname}!`
+                                 (${…} NICHT verändern – das ist der Vorname)
+  Danke-Text                     'Ihre Bestellung ist bei uns eingegangen. …'
+  Text bei Bestellschluss        Die Online-Bestellung ist geschlossen. …
+
+  Bei app.js nach dem Ändern unbedingt testen (Abschnitt 14) – ein
+  vergessenes Anführungszeichen legt die ganze Seite lahm.
+
+
+====================================================================
+11. TEXTE IN DEN MAILS   (Datei: api/lib/Vorlagen.php)
+====================================================================
+
+Vorsicht, das ist PHP-Code. Nur Text INNERHALB von '…' oder "…"
+ändern, nichts davor/danach, keine Anführungszeichen löschen.
+Jede Mail gibt es zweimal: als Text-Version ($t .= "…") und als
+HTML-Version ('<p …>…</p>'). Am besten beide gleich ändern.
+
+--- Mail an die Metzgerei (Funktion "betrieb") ---
+  Betreff      sprintf('Bestellung %s · Abholung %s %s Uhr · %s', …)
+               (%s = Platzhalter für Nummer, Datum, Uhrzeit, Name –
+               Anzahl und Reihenfolge NICHT ändern)
+  Kopfzeile    'Neue Bestellung'
+  Fußzeile     'Eingegangen am … Uhr über die Online-Bestellseite.'
+
+--- Bestätigung an den Kunden (Funktion "kunde") ---
+  Betreff      sprintf('Ihre Bestellung bei der %s (%s)', …)
+               (1. %s = Betriebsname, 2. %s = Bestellnummer)
+  Anrede       Guten Tag …
+  Text         vielen Dank für Ihre Bestellung! Sie ist bei uns eingegangen …
+               (steht 2×: Text- und HTML-Version)
+  Abschluss    Bis bald! Ihre …
+  Fußzeile     Adresse/Telefon/Impressum kommen automatisch aus shop.json
+
+Nach Änderungen: Testbestellung an dich selbst (MAIL_EMPFAENGER
+vorübergehend auf deine Adresse), beide Mails ansehen.
+
+
+====================================================================
+12. FARBEN, SCHRIFTEN, LOGO, FAVICON
+====================================================================
+
+--- Farben & Schriften: assets/style.css, ganz oben im Block :root ---
+  --creme:   #F6F1E8   Seitenhintergrund
+  --rot:     #B3122A   Knöpfe, Akzentbalken, Auswahl
+  --rot-dunkel #8E0E21 Knopf beim Drüberfahren
+  --dunkel:  #26211F   dunkler Kasten, Überschriften, Footer-Leiste
+  --text:    #3A3431   Fließtext
+  --braun:   #5E4330   Footer, kleine Beschriftungen
+  --sand:    #E6D9C6   helle Akzente
+  --serif:   Georgia … Überschriften/Text
+  --sans:    Arial …   Beschriftungen/Knöpfe
+  Nur den Farbcode (#…) ändern. Gilt dann überall auf der Seite.
+  (Die Mail-Farben stehen separat oben in api/lib/Vorlagen.php,
+  z. B. private const ROT = '#B3122A';)
+
+--- Logo: Ordner assets/ ---
+  logo-600.png   600 px breit (normale Bildschirme)
+  logo.png       1200 px breit (scharfe Bildschirme/Handy)
+  favicon.png    180×180 px (Symbol im Browser-Tab)
+  Neues Logo: Dateien mit EXAKT gleichem Namen hochladen
+  (GitHub → Ordner assets → "Add file" → "Upload files" → überschreibt).
+  Transparenter Hintergrund (PNG). Wenn das neue Logo ein anderes
+  Seitenverhältnis hat: in index.html bei <img … width="600" height="357">
+  die Höhe anpassen (Höhe = Breite 600 × Logo-Höhe / Logo-Breite).
+  Anzeigegröße: assets/style.css → .kopf__logo img { width: 250px; }
+  (Handy: weiter unten "width: 190px").
+
+
+====================================================================
+13. SONSTIGES
+====================================================================
+
+--- Wie lange der Warenkorb gespeichert bleibt ---
+  assets/app.js, ganz oben:  const KORB_GUELTIG_TAGE = 3;
+  Zahl ändern, z. B. 14.
+
+--- Spam-Schutz ---
+  Max. Bestellungen pro Anschluss:  api/config.php →
+     'limit' => ['max' => 5, 'minuten' => 10],
+  Max. Bestellungen pro Kunden-Mailadresse: api/bestellung.php →
+     limitPruefen('mail', $kunde['email'], 3, 60,   (3 pro 60 Minuten)
+  Nur erhöhen, wenn sich Kunden beschweren.
+
+--- Testmodus ---
+  data/shop.json → "testmodus": "auto"
+  "auto" = auf *.github.io an, auf bestellen-lang.de aus (so lassen!)
+  true   = Bestellungen werden NICHT verschickt (roter Balken oben)
+  false  = immer echter Versand
+
+--- Domain ändern / zusätzliche Domain ---
+  1. DNS (Squarespace → Domain → DNS-Einstellungen):
+     A-Eintrag auf 169.58.47.236
+  2. Coolify → Anwendung → Domains → "Add Domain" → Protocol https
+  3. Bei neuer Absender-Domain: in Brevo authentifizieren (Abschnitt 9)
+  4. Redeploy
+
+--- Komplett pausieren (z. B. nach Weihnachten) ---
+  Variante A: "bestellschluss" in der Vergangenheit setzen (Abschnitt 2)
+             → Seite bleibt sichtbar, Bestellen gesperrt, Telefon wird gezeigt
+  Variante B: Coolify → Anwendung → oben "Stop" → Seite ganz offline
+
+
+====================================================================
+14. NACH JEDER ÄNDERUNG: KURZ-CHECK (2 Minuten)
+====================================================================
+
+  [ ] Coolify: Deploy ist durchgelaufen, Status "Running"
+  [ ] https://bestellen-lang.de mit Strg + F5 neu laden
+  [ ] Sortiment wird angezeigt (sonst: JSON-Fehler in shop.json!)
+  [ ] https://bestellen-lang.de/api/status.php → alles true
+  [ ] Bei Änderungen an Tagen: Warenkorb füllen → "Weiter zum
+      Abholtermin" → stimmen die Tage und Uhrzeiten?
+  [ ] Bei Änderungen an Mails/Texten/app.js: Testbestellung an
+      die eigene Adresse, beide Mails prüfen (auch Junk-Ordner)
+  [ ] Handy-Ansicht kurz anschauen
+
+
+====================================================================
+15. WENN ETWAS NICHT KLAPPT
+====================================================================
+
+  Sortiment lädt nicht / "konnte nicht geladen werden"
+    → Fehler in shop.json. Inhalt bei jsonlint.com prüfen.
+      Häufig: Komma zu viel nach dem letzten Eintrag, Komma vergessen,
+      24,90 statt 24.90, Anführungszeichen fehlt.
+    → Schnellste Rettung: GitHub → shop.json → "History" → letzte
+      funktionierende Version öffnen → Inhalt kopieren → zurück einfügen.
+
+  Ganze Seite leer / Knöpfe reagieren nicht
+    → Fehler in assets/app.js. Letzte Änderung über "History" rückgängig.
+
+  "Ihre Bestellung konnte gerade nicht übermittelt werden"
+    → Mail-Zugang prüfen (Abschnitt 9: status.php, DEBUG=1, Brevo-Logs)
+
+  "Der gewählte Abholtermin ist leider nicht mehr verfügbar"
+    → normal, wenn der Termin durch den Vorlauf inzwischen zu knapp ist.
+      Kunde wählt neuen Termin.
+
+  Keine Termine wählbar
+    → abholtage/erster_abholtag/geschlossen/bestellschluss prüfen.
+      Liegen alle Tage in der Vergangenheit oder im Vorlauf?
+
+  Mails landen im Spam
+    → Absender als "Kein Junk" markieren lassen. In Brevo prüfen, ob
+      Domain noch authentifiziert ist (Senders, domains, IPs → Domains).
+
+  Änderung auf GitHub ist nicht online
+    → Coolify → Redeploy. Browser mit Strg + F5 neu laden.
+
+  Etwas ganz kaputt
+    → GitHub → Datei → "History" → Version von vorher wiederherstellen
+      → Commit → Redeploy.

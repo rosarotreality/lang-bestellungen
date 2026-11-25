@@ -72,7 +72,9 @@
         ? `${(menge / 1000).toLocaleString('de-DE', { maximumFractionDigits: 3 })} kg`
         : `${menge} g`;
     }
-    return `${menge} ${einheitLabel(p)}`;
+    // Mehrzahl, z. B. "1 Person" / "4 Personen"
+    const label = menge !== 1 && p.einheit_label_mehrzahl ? p.einheit_label_mehrzahl : einheitLabel(p);
+    return `${menge} ${label}`;
   }
 
   function preisZeile(p) {
@@ -83,6 +85,12 @@
   }
 
   function mengeKorrigieren(p, m) {
+    if (p.einheit === 'kg') {
+      // Gramm frei eingebbar: nur ganze Gramm, zwischen min und max
+      m = Math.round(Number(String(m).replace(',', '.')));
+      if (!Number.isFinite(m) || m <= 0) m = p.min;
+      return Math.min(p.max, Math.max(p.min, m));
+    }
     m = Number(m) || p.min;
     m = Math.min(p.max, Math.max(p.min, m));
     m = p.min + Math.round((m - p.min) / p.schritt) * p.schritt;
@@ -110,7 +118,7 @@
       p.schritt = p.schritt ?? (p.einheit === 'kg' ? 250 : 1);
       p.max = p.max ?? (p.einheit === 'kg' ? 5000 : 50);
       produkte.set(p.id, p);
-      auswahl[p.id] = { menge: p.min, option: optionen(p)[0] || '' };
+      auswahl[p.id] = { menge: mengeKorrigieren(p, p.start ?? p.min), option: optionen(p)[0] || '' };
     });
 
     const tm = shop.testmodus ?? 'auto';
@@ -123,6 +131,7 @@
     }
     hinweis.hidden = !(istTest || shop.demo_hinweis);
     betriebEinsetzen();
+    hinweiseEinsetzen();
     korbLaden();
     renderKategorien();
     renderProdukte();
@@ -139,6 +148,7 @@
     const tel = (b.telefon || '').replace(/[^\d+]/g, '');
     $('#fuss-kontakt').innerHTML = `Telefon <a href="tel:${esc(tel)}">${esc(b.telefon)}</a><br><a href="mailto:${esc(b.email)}">${esc(b.email)}</a>`;
     $('#fuss-zeiten').innerHTML = oeffnungszeitenText();
+    $('#kopf-adresse').innerHTML = `${esc(b.strasse)} · ${esc(b.ort)}<span class="trenner"> · </span><a href="tel:${esc(tel)}">Tel. ${esc(b.telefon)}</a>`;
     $('#zahlung-hinweis').textContent = b.zahlung_hinweis || '';
   }
 
@@ -168,6 +178,36 @@
     return zeilen.join('') || 'Werden bekanntgegeben.';
   }
 
+  // Bestellschluss (z. B. "2026-12-20T12:00", Uhrzeit in Deutschland)
+  function bestellschlussVorbei() {
+    const bs = shop.abholung && shop.abholung.bestellschluss;
+    return !!bs && berlinJetzt() > Date.parse(`${bs.length === 16 ? bs + ':00' : bs}Z`);
+  }
+  function bestellschlussText() {
+    const bs = shop.abholung && shop.abholung.bestellschluss;
+    if (!bs) return '';
+    return `${terminText(bs.slice(0, 10), bs.slice(11, 16))}`;
+  }
+
+  function hinweiseEinsetzen() {
+    const liste = [...(shop.hinweise || [])];
+    if (shop.abholung && shop.abholung.bestellschluss && !bestellschlussVorbei()) {
+      liste.unshift(`<strong>Bestellschluss:</strong> ${esc(bestellschlussText())}`);
+    }
+    const box = $('#hinweise');
+    box.hidden = !liste.length;
+    box.innerHTML = liste.map((h) => `<p>${h}</p>`).join('');   // Texte stammen aus shop.json (eigene Pflege)
+
+    if (bestellschlussVorbei()) {
+      document.body.classList.add('geschlossen');
+      const b = shop.betrieb;
+      const banner = $('#demo-hinweis');
+      banner.innerHTML = `Die Online-Bestellung ist geschlossen. Gerne nehmen wir Ihre Bestellung telefonisch entgegen: <a href="tel:${esc((b.telefon || '').replace(/[^\d+]/g, ''))}">${esc(b.telefon)}</a>`;
+      banner.classList.add('demo-hinweis--test');
+      banner.hidden = false;
+    }
+  }
+
   /* ---------------- Warenkorb laden/speichern ---------------- */
   function korbLaden() {
     const gespeichert = speicher.lesen('localStorage', SPEICHER_KORB);
@@ -180,7 +220,7 @@
       const opts = optionen(p);
       const option = opts.length ? (opts.includes(pos.option) ? pos.option : null) : '';
       if (option === null) return;
-      korb.push({ id: p.id, option, menge: mengeKorrigieren(p, pos.menge) });
+      korb.push({ id: p.id, option, menge: mengeKorrigieren(p, pos.menge), notiz: typeof pos.notiz === 'string' ? pos.notiz.slice(0, 120) : '' });
     });
   }
 
@@ -249,13 +289,17 @@
   function mengeHtml(p, menge, attr, klein = false) {
     return `<div class="menge${klein ? ' menge--klein' : ''}" ${attr}>
       <button type="button" data-schritt="-1" aria-label="Weniger ${esc(p.name)}"${menge <= p.min ? ' disabled' : ''}>−</button>
-      <output aria-live="polite">${esc(mengeText(p, menge))}</output>
+      ${p.einheit === 'kg'
+        ? `<label class="menge__feld"><input class="menge__eingabe" type="number" inputmode="numeric" min="${p.min}" max="${p.max}" step="1"
+             value="${menge}" aria-label="Menge in Gramm für ${esc(p.name)} (${p.min}–${p.max} g)"><span aria-hidden="true">g</span></label>`
+        : `<output aria-live="polite">${esc(mengeText(p, menge))}</output>`}
       <button type="button" data-schritt="1" aria-label="Mehr ${esc(p.name)}"${menge >= p.max ? ' disabled' : ''}>+</button>
     </div>`;
   }
 
   function mengeAnzeigeAktualisieren(el, p, menge) {
-    $('output', el).textContent = mengeText(p, menge);
+    const feld = $('.menge__eingabe', el);
+    if (feld) feld.value = menge; else $('output', el).textContent = mengeText(p, menge);
     $('[data-schritt="-1"]', el).disabled = menge <= p.min;
     $('[data-schritt="1"]', el).disabled = menge >= p.max;
   }
@@ -289,13 +333,15 @@
             ${mengeHtml(p, pos.menge, `data-zeile="${i}"`, true)}
             <button class="zeile__entfernen" type="button" data-entfernen="${i}">Entfernen</button>
           </div>
+          <input class="zeile__notiz" type="text" data-notiz="${i}" maxlength="120" value="${esc(pos.notiz || '')}"
+            placeholder="${esc(p.notiz_hinweis || 'Notiz, z. B. Zuschnitt oder Personenzahl')}" aria-label="Notiz zu ${esc(p.name)}">
         </div>`;
       }).join('');
     }
     $('#korb-summe').textContent = summeText();
     $('#korb-summe').parentElement.hidden = !shopHatPreise;
     $('#korb-hinweis').textContent = korb.length ? korbHinweis() : '';
-    $('#zur-kasse').disabled = !korb.length;
+    $('#zur-kasse').disabled = !korb.length || bestellschlussVorbei();
 
     const anzahl = korb.length;
     $('#leiste-anzahl').textContent = `${anzahl} ${anzahl === 1 ? 'Position' : 'Positionen'}`;
@@ -325,7 +371,7 @@
     const key = korbKey(id, a.option);
     const vorhanden = korb.find((pos) => korbKey(pos.id, pos.option) === key);
     if (vorhanden) vorhanden.menge = mengeKorrigieren(p, vorhanden.menge + a.menge);
-    else korb.push({ id, option: a.option, menge: a.menge });
+    else korb.push({ id, option: a.option, menge: a.menge, notiz: '' });
     korbSpeichern();
     renderKorb();
 
@@ -359,6 +405,24 @@
     $('#produkte').addEventListener('change', (e) => {
       const sel = e.target.closest('[data-option]');
       if (sel) auswahl[sel.dataset.option].option = sel.value;
+      const feld = e.target.closest('.menge__eingabe');
+      if (feld) {
+        const box = feld.closest('[data-karte]');
+        const p = produkte.get(box.dataset.karte);
+        auswahl[p.id].menge = mengeKorrigieren(p, feld.value);
+        mengeAnzeigeAktualisieren(box, p, auswahl[p.id].menge);
+      }
+    });
+    // Eingetippte Gramm sofort übernehmen (Korrektur auf min/max erst beim Verlassen des Feldes)
+    $('#produkte').addEventListener('input', (e) => {
+      const feld = e.target.closest('.menge__eingabe');
+      if (!feld) return;
+      const p = produkte.get(feld.closest('[data-karte]').dataset.karte);
+      const wert = Math.round(Number(feld.value));
+      if (wert >= p.min && wert <= p.max) auswahl[p.id].menge = wert;
+    });
+    $('#produkte').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.target.closest('.menge__eingabe')) { e.preventDefault(); e.target.blur(); }
     });
 
     // Kategorien-Navigation (ohne Hash, damit das Routing nicht stört)
@@ -370,6 +434,19 @@
     });
 
     // Warenkorb
+    $('#korb-inhalt').addEventListener('change', (e) => {
+      const feld = e.target.closest('.menge__eingabe');
+      if (!feld) return;
+      const i = Number(feld.closest('[data-zeile]').dataset.zeile);
+      const pos = korb[i];
+      if (!pos) return;
+      pos.menge = mengeKorrigieren(produkte.get(pos.id), feld.value);
+      korbSpeichern(); renderKorb();
+    });
+    $('#korb-inhalt').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.target.closest('.menge__eingabe')) { e.preventDefault(); e.target.blur(); }
+    });
+
     $('#korb-inhalt').addEventListener('click', (e) => {
       const schritt = e.target.closest('[data-schritt]');
       if (schritt) {
@@ -387,6 +464,13 @@
         korbSpeichern(); renderKorb();
         ansagen(`${produkte.get(pos.id).name} entfernt.`);
       }
+    });
+
+    $('#korb-inhalt').addEventListener('input', (e) => {
+      const feld = e.target.closest('[data-notiz]');
+      if (!feld) return;
+      const pos = korb[Number(feld.dataset.notiz)];
+      if (pos) { pos.notiz = feld.value.slice(0, 120); korbSpeichern(); }
     });
 
     // Globale Aktionen
@@ -451,7 +535,7 @@
   /* ---------------- Routing ---------------- */
   function aktuelleAnsicht() {
     const h = location.hash.replace('#', '');
-    if (h === 'kasse' && korb.length) return 'kasse';
+    if (h === 'kasse' && korb.length && !bestellschlussVorbei()) return 'kasse';
     if (h === 'danke' && letzteBestellung) return 'danke';
     return 'sortiment';
   }
@@ -495,12 +579,19 @@
     const slot = a.slot_minuten || 30;
     const ergebnis = [];
 
-    for (let i = 0; i <= (a.tage_im_voraus || 14); i++) {
-      const tagMs = start + i * 864e5;
+    // Feste Abholtage (z. B. nur 22.–24.12.) haben Vorrang vor dem normalen Zeitraum
+    const feste = a.abholtage && typeof a.abholtage === 'object' && Object.keys(a.abholtage).length
+      ? Object.keys(a.abholtage).sort() : null;
+    const tageListe = feste
+      ? feste.map((iso) => Date.parse(`${iso}T00:00:00Z`))
+      : Array.from({ length: (a.tage_im_voraus || 14) + 1 }, (_, i) => start + i * 864e5);
+
+    for (const tagMs of tageListe) {
       const iso = isoTag(tagMs);
       if (geschlossen.has(iso)) continue;
       const wtIndex = new Date(tagMs).getUTCDay();
-      const intervalle = (a.oeffnungszeiten || {})[WOCHENTAGE[wtIndex]] || [];
+      const eigene = feste && Array.isArray(a.abholtage[iso]) && a.abholtage[iso].length ? a.abholtage[iso] : null;
+      const intervalle = eigene || (a.oeffnungszeiten || {})[WOCHENTAGE[wtIndex]] || [];
       const slots = [];
       intervalle.forEach(([von, bis], gruppe) => {
         for (let t = minuten(von); t + slot <= minuten(bis); t += slot) {
@@ -575,7 +666,7 @@
       const p = produkte.get(pos.id);
       return `<div class="zeile zeile--fest">
         <span class="zeile__menge">${esc(mengeText(p, pos.menge))}</span>
-        <span class="zeile__name">${esc(p.name)}${pos.option ? `<span class="zeile__option">${esc(pos.option)}</span>` : ''}</span>
+        <span class="zeile__name">${esc(p.name)}${pos.option ? `<span class="zeile__option">${esc(pos.option)}</span>` : ''}${pos.notiz ? `<span class="zeile__option zeile__option--notiz">${esc(pos.notiz)}</span>` : ''}</span>
         <span class="zeile__preis">${zeilenPreis(p, pos.menge)}</span>
       </div>`;
     }).join('');
@@ -585,7 +676,7 @@
     $('#uebersicht-summe').previousElementSibling.innerHTML = korbIstCa() ? 'Summe <em>ca.</em>' : 'Summe';
   }
 
-  const FELDER = ['vorname', 'nachname', 'telefon', 'email', 'anmerkung'];
+  const FELDER = ['vorname', 'nachname', 'strasse', 'ort', 'telefon', 'email', 'anmerkung'];
 
   function kontaktSpeichern() {
     const f = $('#bestellformular');
@@ -620,6 +711,8 @@
     else if (!termin.zeit) fehler.zeit = 'Bitte wählen Sie eine Uhrzeit.';
     if (!daten.vorname.trim()) fehler.vorname = 'Bitte geben Sie Ihren Vornamen an.';
     if (!daten.nachname.trim()) fehler.nachname = 'Bitte geben Sie Ihren Nachnamen an.';
+    if (!daten.strasse.trim()) fehler.strasse = 'Bitte geben Sie Straße und Hausnummer an.';
+    if (!daten.ort.trim()) fehler.ort = 'Bitte geben Sie PLZ und Ort an.';
     const tel = daten.telefon.trim();
     if (!/^[0-9+()/\-\s]{6,30}$/.test(tel) || tel.replace(/\D/g, '').length < 6) fehler.telefon = 'Bitte geben Sie eine gültige Telefonnummer an.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(daten.email.trim())) fehler.email = 'Bitte geben Sie eine gültige E-Mail-Adresse an.';
@@ -661,9 +754,13 @@
     knopf.textContent = 'Wird gesendet …';
 
     const nutzlast = {
-      positionen: korb.map(({ id, option, menge }) => ({ id, option, menge })),
+      positionen: korb.map(({ id, option, menge, notiz }) => ({ id, option, menge, notiz: (notiz || '').trim() })),
       abholung: { datum: termin.datum, zeit: termin.zeit },
-      kunde: { vorname: daten.vorname.trim(), nachname: daten.nachname.trim(), telefon: daten.telefon.trim(), email: daten.email.trim() },
+      kunde: {
+        vorname: daten.vorname.trim(), nachname: daten.nachname.trim(),
+        strasse: daten.strasse.trim(), ort: daten.ort.trim(),
+        telefon: daten.telefon.trim(), email: daten.email.trim(),
+      },
       anmerkung: daten.anmerkung.trim(),
       website: f.elements.website.value,
       dauer: Date.now() - formStart,
@@ -724,7 +821,8 @@
       const p = produkte.get(pos.id);
       const nr = artikelNr(p, pos.option);
       return `  ${fuell(mengeText(p, pos.menge), 10)} ${fuell((nr ? nr + '  ' : '') + p.name, 28)} ${fuell(`${zeilenPreis(p, pos.menge)}`, 13, true)}`
-        + (pos.option ? `\n             → ${pos.option}` : '');
+        + (pos.option ? `\n             → ${pos.option}` : '')
+        + (pos.notiz ? `\n             → Notiz: ${pos.notiz}` : '');
     }).join('\n');
     const ca = korbIstCa();
     return [
@@ -736,6 +834,7 @@
       `Abholung:  ${terminText(n.abholung.datum, n.abholung.zeit)}`,
       '',
       `Kunde:     ${k.vorname} ${k.nachname}`,
+      `Adresse:   ${k.strasse}, ${k.ort}`,
       `Telefon:   ${k.telefon}`,
       `E-Mail:    ${k.email}`,
       '',
@@ -773,6 +872,13 @@
     formStart = 0;
     $$('.ansicht').forEach((s) => { s.hidden = s.id !== 'ansicht-danke'; });
     location.hash = 'danke';
+  }
+
+  // Fallback-Schriftzug, falls das Logo nicht lädt (ohne Inline-Script, wegen CSP)
+  const logo = document.getElementById('logo');
+  if (logo) {
+    const ersatz = () => { logo.hidden = true; logo.nextElementSibling.hidden = false; };
+    if (logo.complete && logo.naturalWidth === 0) ersatz(); else logo.addEventListener('error', ersatz);
   }
 
   document.addEventListener('DOMContentLoaded', start);

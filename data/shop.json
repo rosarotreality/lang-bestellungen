@@ -1,77 +1,63 @@
 {
-  "_hinweis": "Sortiment nach Artikelliste der Metzgerei Lang (Nov. 2026). Preise fehlen noch: sobald 'preis_kg' bzw. 'preis_stueck' eingetragen sind, zeigt die Seite Preise und Summe an. Mengen (min/schritt/max, in Gramm bei einheit 'kg') und Einheiten sind Vorschläge und müssen abgestimmt werden. 'artikelnr' erscheint nur in der Mail an die Metzgerei.",
-  "demo_hinweis": true,
+  "_hinweis": "Weihnachts-Bestellliste 2026. Keine Preise – abgerechnet wird bei Abholung. Bei einheit 'kg' sind Mengen in Gramm frei eingebbar zwischen min und max; 'schritt' ist nur der Sprung beim +/- Knopf. Bei Stückware: einheit_label (z. B. Paar, Becher, Person) und optional einheit_label_mehrzahl (z. B. Personen). 'notiz_hinweis' = Platzhalter im Notizfeld der Warenkorbzeile. 'start' = vorausgewählte Menge auf der Produktkarte.",
+  "demo_hinweis": false,
   "_hinweis_testmodus": "testmodus: 'auto' = auf *.github.io automatisch an (Bestellungen werden nur simuliert), auf dem eigenen Server aus. true/false erzwingt es.",
   "testmodus": "auto",
+  "hinweise": [
+    "Das restliche Wurstsortiment können Sie am Abholtag bei uns im Laden einkaufen.",
+    "Artikel, die nicht auf der Bestellliste stehen, fragen Sie gerne telefonisch an: <a href=\"tel:083212407\">08321 2407</a>."
+  ],
   "betrieb": {
     "name": "Metzgerei Lang",
-    "strasse": "Berghoferstraße 14",
+    "strasse": "Berghofer Str. 14",
     "ort": "87527 Sonthofen",
     "telefon": "08321 2407",
     "email": "info@lang-partyservice.de",
     "website": "https://lang-partyservice.de/",
     "impressum": "https://lang-partyservice.de/impressum/",
     "datenschutz": "https://lang-partyservice.de/datenschutz/",
-    "zahlung_hinweis": "Bezahlung bei Abholung im Laden (bar oder EC-Karte)."
+    "zahlung_hinweis": "Bezahlt wird bei Abholung im Laden."
   },
+  "_hinweis_abholung": "abholtage: feste Abholtage, z. B. {\"2026-12-23\": [], \"2026-12-24\": [[\"07:00\",\"11:00\"]]} – leere Liste = normale Öffnungszeiten des Wochentags. Solange abholtage leer ist, gilt: ab erster_abholtag für tage_im_voraus Tage. bestellschluss z. B. \"2026-12-20T12:00\" (deutsche Zeit) oder null.",
   "abholung": {
     "vorlauf_stunden": 24,
-    "tage_im_voraus": 21,
-    "erster_abholtag": "2026-12-01",
+    "erster_abholtag": "2026-12-15",
+    "tage_im_voraus": 16,
+    "abholtage": {},
+    "bestellschluss": null,
     "slot_minuten": 30,
     "oeffnungszeiten": {
       "mo": [
         [
-          "07:30",
-          "12:30"
-        ],
-        [
-          "14:30",
-          "18:00"
+          "07:00",
+          "13:30"
         ]
       ],
       "di": [
         [
-          "07:30",
-          "12:30"
-        ],
-        [
-          "14:30",
-          "18:00"
+          "07:00",
+          "13:30"
         ]
       ],
       "mi": [
         [
-          "07:30",
-          "12:30"
+          "07:00",
+          "13:30"
         ]
       ],
       "do": [
         [
-          "07:30",
-          "12:30"
-        ],
-        [
-          "14:30",
-          "18:00"
+          "07:00",
+          "13:30"
         ]
       ],
       "fr": [
         [
-          "07:30",
-          "12:30"
-        ],
-        [
-          "14:30",
-          "18:00"
-        ]
-      ],
-      "sa": [
-        [
           "07:00",
-          "12:00"
+          "13:30"
         ]
       ],
+      "sa": [],
       "so": []
     },
     "geschlossen": [
@@ -82,96 +68,62 @@
     ]
   },
   "kategorien": [
-    {"id": "aufschnitt", "name": "Aufschnitt"},
-    {"id": "rohwurst", "name": "Rohwurst & Halbdauerware"},
-    {"id": "kochwurst", "name": "Kochwurst"},
-    {"id": "wuerste", "name": "Würste"},
-    {"id": "knoedel", "name": "Knödel"},
-    {"id": "salate", "name": "Salate"},
-    {"id": "schinken", "name": "Kochschinken & Rohschinken"},
-    {"id": "heisstheke", "name": "Heiße Theke"},
-    {"id": "fleisch", "name": "Frischfleisch"}
+    {"id": "rind", "name": "Rindfleisch"},
+    {"id": "schwein", "name": "Schweinefleisch"},
+    {"id": "kalb", "name": "Kalbfleisch"},
+    {"id": "gefluegel", "name": "Geflügel"},
+    {"id": "lamm-wild", "name": "Lamm & Wild"},
+    {"id": "sossen", "name": "Soßen"},
+    {"id": "salate", "name": "Salate & Feinkost"},
+    {"id": "wurst", "name": "Wurst & Knödel"}
   ],
   "produkte": [
-    {"id": "bierschinken", "kategorie": "aufschnitt", "name": "Bierschinken", "artikelnr": "3", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "lyoner", "kategorie": "aufschnitt", "name": "Lyoner", "artikelnr": "1", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "lyoner-im-ring", "kategorie": "aufschnitt", "name": "Lyoner im Ring", "artikelnr": "46", "einheit": "stueck", "min": 1, "schritt": 1, "max": 20},
-    {"id": "paprika-lyoner", "kategorie": "aufschnitt", "name": "Paprika-Lyoner", "artikelnr": "18", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "pistazien-lyoner", "kategorie": "aufschnitt", "name": "Pistazien-Lyoner", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "pilz-lyoner", "kategorie": "aufschnitt", "name": "Pilz-Lyoner", "artikelnr": "20", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "paprika-pastete", "kategorie": "aufschnitt", "name": "Paprika-Pastete", "artikelnr": "19", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "jagdwurst", "kategorie": "aufschnitt", "name": "Jagdwurst", "artikelnr": "10", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "rinder-bierschinken", "kategorie": "aufschnitt", "name": "Rinder-Bierschinken", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "leberkaese", "kategorie": "aufschnitt", "name": "Leberkäse", "artikelnr": "15", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "roestzwiebel-leberkaese", "kategorie": "aufschnitt", "name": "Röstzwiebel-Leberkäse", "artikelnr": "24", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "pizza-leberkaese", "kategorie": "aufschnitt", "name": "Pizza-Leberkäse", "artikelnr": "24", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "gelbwurst", "kategorie": "aufschnitt", "name": "Gelbwurst", "artikelnr": "8", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "fruehstuecksfleisch", "kategorie": "aufschnitt", "name": "Frühstücksfleisch", "artikelnr": "90", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück", "im Glas"]}},
-    {"id": "teewurst", "kategorie": "rohwurst", "name": "Teewurst", "artikelnr": "114", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000},
-    {"id": "zwiebelmettwurst", "kategorie": "rohwurst", "name": "Zwiebelmettwurst", "artikelnr": "777", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000},
-    {"id": "haussalami", "kategorie": "rohwurst", "name": "Haussalami", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "polnische", "kategorie": "rohwurst", "name": "Polnische", "artikelnr": "51", "einheit": "stueck", "min": 1, "schritt": 1, "max": 30, "optionen": {"label": "Sorte", "werte": ["mit Kümmel", "ohne Kümmel"]}},
-    {"id": "rauchpeitschen", "kategorie": "rohwurst", "name": "Rauchpeitschen", "artikelnr": "120", "einheit": "stueck", "min": 1, "schritt": 1, "max": 30},
-    {"id": "mediterrane-pfefferbeisser", "kategorie": "rohwurst", "name": "Mediterrane Pfefferbeißer", "einheit": "stueck", "min": 1, "schritt": 1, "max": 30},
-    {"id": "goettinger", "kategorie": "rohwurst", "name": "Göttinger", "artikelnr": "9", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "brotzeit-knacker", "kategorie": "rohwurst", "name": "Brotzeit-Knacker", "einheit": "stueck", "min": 1, "schritt": 1, "max": 30},
-    {"id": "landjaeger", "kategorie": "rohwurst", "name": "Landjäger", "artikelnr": "49", "einheit": "stueck", "einheit_label": "Paar", "min": 1, "schritt": 1, "max": 30},
-    {"id": "presssack", "kategorie": "kochwurst", "name": "Presssack", "artikelnr": {"weiß": "771", "grau": "770"}, "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Sorte", "werte": ["weiß", "grau"]}},
-    {"id": "leberwurst", "kategorie": "kochwurst", "name": "Leberwurst", "artikelnr": "73", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Sorte", "werte": ["im Golddarm", "im Golddarm mit Rauch"]}},
-    {"id": "zungenwurst", "kategorie": "kochwurst", "name": "Zungenwurst", "artikelnr": "82", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "speckblutwurst", "kategorie": "kochwurst", "name": "Speckblutwurst", "artikelnr": "78", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "wiener", "kategorie": "wuerste", "name": "Wiener", "artikelnr": "781", "einheit": "stueck", "einheit_label": "Paar", "min": 1, "schritt": 1, "max": 30},
-    {"id": "debrecziner", "kategorie": "wuerste", "name": "Debrecziner", "artikelnr": "42", "einheit": "stueck", "einheit_label": "Paar", "min": 1, "schritt": 1, "max": 30},
-    {"id": "weisswurst", "kategorie": "wuerste", "name": "Weißwurst", "artikelnr": "56", "einheit": "stueck", "min": 1, "schritt": 1, "max": 60},
-    {"id": "chiliwurst", "kategorie": "wuerste", "name": "Chiliwurst", "artikelnr": "58", "einheit": "stueck", "min": 1, "schritt": 1, "max": 60},
-    {"id": "bockwurst", "kategorie": "wuerste", "name": "Bockwurst", "artikelnr": "2040", "einheit": "stueck", "min": 1, "schritt": 1, "max": 60},
-    {"id": "schweinsbratwurst", "kategorie": "wuerste", "name": "Schweinsbratwurst", "artikelnr": "7041", "einheit": "stueck", "min": 1, "schritt": 1, "max": 60},
-    {"id": "geschwollene", "kategorie": "wuerste", "name": "Geschwollene", "artikelnr": "43", "einheit": "stueck", "min": 1, "schritt": 1, "max": 60},
-    {"id": "speckknoedel", "kategorie": "knoedel", "name": "Speckknödel", "artikelnr": "602", "einheit": "stueck", "min": 1, "schritt": 1, "max": 40},
-    {"id": "leberknoedel", "kategorie": "knoedel", "name": "Leberknödel", "artikelnr": "601", "einheit": "stueck", "min": 1, "schritt": 1, "max": 40},
-    {"id": "braetknoedel", "kategorie": "knoedel", "name": "Brätknödel", "artikelnr": "600", "einheit": "stueck", "min": 1, "schritt": 1, "max": 40},
-    {"id": "nudelsalat", "kategorie": "salate", "name": "Nudelsalat", "artikelnr": "709", "einheit": "kg", "min": 200, "schritt": 100, "max": 5000},
-    {"id": "krautsalat", "kategorie": "salate", "name": "Krautsalat", "artikelnr": "714", "einheit": "kg", "min": 200, "schritt": 100, "max": 5000},
-    {"id": "kartoffelsalat", "kategorie": "salate", "name": "Kartoffelsalat", "artikelnr": "705", "einheit": "kg", "min": 200, "schritt": 100, "max": 5000},
-    {"id": "wurstsalat", "kategorie": "salate", "name": "Wurstsalat", "artikelnr": "703", "einheit": "kg", "min": 200, "schritt": 100, "max": 5000},
-    {"id": "schweizer-wurstsalat", "kategorie": "salate", "name": "Schweizer Wurstsalat", "artikelnr": "704", "einheit": "kg", "min": 200, "schritt": 100, "max": 5000},
-    {"id": "fleischsalat", "kategorie": "salate", "name": "Fleischsalat", "artikelnr": "700", "einheit": "kg", "min": 200, "schritt": 100, "max": 5000},
-    {"id": "rohkostsalat", "kategorie": "salate", "name": "Rohkostsalat", "artikelnr": "711", "einheit": "kg", "min": 200, "schritt": 100, "max": 5000},
-    {"id": "waldorfsalat", "kategorie": "salate", "name": "Waldorfsalat", "artikelnr": "718", "einheit": "kg", "min": 200, "schritt": 100, "max": 5000},
-    {"id": "eiersalat", "kategorie": "salate", "name": "Eiersalat", "artikelnr": "724", "einheit": "kg", "min": 200, "schritt": 100, "max": 5000},
-    {"id": "nuss-kochschinken", "kategorie": "schinken", "name": "Nuss-Kochschinken", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "bauernschinken", "kategorie": "schinken", "name": "Bauernschinken", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "schinkenspeck", "kategorie": "schinken", "name": "Schinkenspeck", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "schwarzgeraeuchertes", "kategorie": "schinken", "name": "Schwarzgeräuchertes", "artikelnr": "156", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "zigeunerbauch", "kategorie": "schinken", "name": "Zigeunerbauch", "artikelnr": "179", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "wammerl", "kategorie": "schinken", "name": "Wammerl", "artikelnr": "176", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000, "optionen": {"label": "Ausführung", "werte": ["geschnitten", "am Stück"]}},
-    {"id": "schnitzel", "kategorie": "heisstheke", "name": "Schnitzel", "artikelnr": {"heiß": "2032", "kalt": "807"}, "einheit": "stueck", "min": 1, "schritt": 1, "max": 30, "optionen": {"label": "Ausführung", "werte": ["heiß", "kalt"]}},
-    {"id": "zigeunerbauch-heisstheke", "kategorie": "heisstheke", "name": "Zigeunerbauch", "artikelnr": "179", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000},
-    {"id": "cordon-bleu", "kategorie": "heisstheke", "name": "Cordon bleu", "artikelnr": {"heiß": "2031", "kalt": "621"}, "einheit": "stueck", "min": 1, "schritt": 1, "max": 30, "optionen": {"label": "Ausführung", "werte": ["heiß", "kalt"]}},
-    {"id": "fleischkuechle", "kategorie": "heisstheke", "name": "Fleischküchle", "artikelnr": "800", "einheit": "stueck", "min": 1, "schritt": 1, "max": 40},
-    {"id": "leberkaese-heisstheke", "kategorie": "heisstheke", "name": "Leberkäse", "artikelnr": "15", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000},
-    {"id": "pizza-leberkaese-heisstheke", "kategorie": "heisstheke", "name": "Pizza-Leberkäse", "artikelnr": "24", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000},
-    {"id": "schweinebauch", "kategorie": "heisstheke", "name": "Schweinebauch", "artikelnr": "178", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000},
-    {"id": "spiessbraten-gewuerzt", "kategorie": "heisstheke", "name": "Spießbraten, gewürzt", "artikelnr": "629", "einheit": "kg", "min": 100, "schritt": 50, "max": 3000},
-    {"id": "schweineschnitzel-oberschale", "kategorie": "fleisch", "name": "Schweineschnitzel (Oberschale)", "artikelnr": "310", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000},
-    {"id": "schweineruecken", "kategorie": "fleisch", "name": "Schweinerücken", "artikelnr": "314", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000},
-    {"id": "schweinegulasch", "kategorie": "fleisch", "name": "Schweinegulasch", "artikelnr": "335", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000},
-    {"id": "putenschnitzel", "kategorie": "fleisch", "name": "Putenschnitzel", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000},
-    {"id": "putengeschnetzeltes", "kategorie": "fleisch", "name": "Putengeschnetzeltes", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000},
-    {"id": "schweinegeschnetzeltes", "kategorie": "fleisch", "name": "Schweinegeschnetzeltes", "artikelnr": "312", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000},
-    {"id": "haehnchenbrust", "kategorie": "fleisch", "name": "Hähnchenbrust", "artikelnr": "761", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000},
-    {"id": "polofino", "kategorie": "fleisch", "name": "Polofino", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000},
-    {"id": "rindergulasch", "kategorie": "fleisch", "name": "Rindergulasch", "artikelnr": "419", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000},
-    {"id": "rindergeschnetzeltes", "kategorie": "fleisch", "name": "Rindergeschnetzeltes", "artikelnr": "423", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000},
-    {"id": "schweine-gyros", "kategorie": "fleisch", "name": "Schweine-Gyros", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000},
-    {"id": "rinderrouladen", "kategorie": "fleisch", "name": "Rinderrouladen", "einheit": "stueck", "min": 1, "schritt": 1, "max": 30},
-    {"id": "1-2-pfannen", "kategorie": "fleisch", "name": "1-2 Pfannen", "einheit": "stueck", "min": 1, "schritt": 1, "max": 20},
-    {"id": "schweinebauch-fleisch", "kategorie": "fleisch", "name": "Schweinebauch", "artikelnr": "306", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000},
-    {"id": "roastbeef", "kategorie": "fleisch", "name": "Roastbeef", "artikelnr": "420", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000},
-    {"id": "schweinefilet", "kategorie": "fleisch", "name": "Schweinefilet", "artikelnr": "311", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000},
-    {"id": "rinderfilet", "kategorie": "fleisch", "name": "Rinderfilet", "artikelnr": "421", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000},
-    {"id": "rinderbraten", "kategorie": "fleisch", "name": "Rinderbraten", "einheit": "kg", "min": 500, "schritt": 250, "max": 10000},
-    {"id": "schweine-krustenbraten", "kategorie": "fleisch", "name": "Schweine-Krustenbraten", "einheit": "kg", "min": 500, "schritt": 250, "max": 10000},
-    {"id": "suppenknochen", "kategorie": "fleisch", "name": "Suppenknochen", "artikelnr": "427", "einheit": "kg", "min": 500, "schritt": 500, "max": 10000}
+    {"id": "rinderbraten", "kategorie": "rind", "name": "Rinderbraten", "einheit": "kg", "min": 100, "schritt": 250, "max": 10000, "notiz_hinweis": "Welches Teilstück? Für wie viele Personen?", "start": 1000},
+    {"id": "rindersteaks", "kategorie": "rind", "name": "Rindersteaks", "einheit": "stueck", "min": 1, "schritt": 1, "max": 40, "notiz_hinweis": "Welche Steaks? Gewünschte Dicke?"},
+    {"id": "rinderfilet", "kategorie": "rind", "name": "Rinderfilet", "einheit": "kg", "min": 100, "schritt": 250, "max": 5000, "notiz_hinweis": "Am Stück oder in Medaillons?", "start": 500},
+    {"id": "rinderrouladen", "kategorie": "rind", "name": "Rinderrouladen", "einheit": "stueck", "min": 1, "schritt": 1, "max": 40, "notiz_hinweis": "Natur oder fertig gefüllt?"},
+    {"id": "rindergulasch", "kategorie": "rind", "name": "Rindergulasch", "einheit": "kg", "min": 100, "schritt": 250, "max": 10000, "start": 500},
+    {"id": "rindergeschnetzeltes", "kategorie": "rind", "name": "Rindergeschnetzeltes", "einheit": "kg", "min": 100, "schritt": 250, "max": 10000, "start": 500},
+    {"id": "fonduefleisch-rind", "kategorie": "rind", "name": "Fonduefleisch vom Rind", "beschreibung": "Mundgerecht geschnitten – rechnen Sie mit ca. 200 g pro Person.", "einheit": "kg", "min": 100, "schritt": 100, "max": 10000, "notiz_hinweis": "Für wie viele Personen?", "start": 400},
+    {"id": "schweineschnitzel", "kategorie": "schwein", "name": "Schweineschnitzel", "einheit": "stueck", "min": 1, "schritt": 1, "max": 40, "notiz_hinweis": "z. B. dünn geklopft"},
+    {"id": "schweinegulasch", "kategorie": "schwein", "name": "Schweinegulasch", "einheit": "kg", "min": 100, "schritt": 250, "max": 10000, "start": 500},
+    {"id": "schweinegeschnetzeltes", "kategorie": "schwein", "name": "Schweinegeschnetzeltes", "einheit": "kg", "min": 100, "schritt": 250, "max": 10000, "start": 500},
+    {"id": "krustenbraten", "kategorie": "schwein", "name": "Krustenbraten", "einheit": "kg", "min": 100, "schritt": 250, "max": 10000, "start": 1000},
+    {"id": "schweinebraten", "kategorie": "schwein", "name": "Schweinebraten", "einheit": "kg", "min": 100, "schritt": 250, "max": 10000, "beschreibung": "Verschiedene Braten – das gewünschte Teilstück bitte in der Notiz angeben.", "notiz_hinweis": "Welcher Braten? z. B. Schulter, Hals, Rollbraten", "start": 1000},
+    {"id": "schweinefilet", "kategorie": "schwein", "name": "Schweinefilet", "einheit": "kg", "min": 100, "schritt": 250, "max": 5000, "start": 500},
+    {"id": "kassler-blaetterteig", "kategorie": "schwein", "name": "Kassler im Blätterteig", "einheit": "stueck", "min": 1, "schritt": 1, "max": 30, "einheit_label": "Person", "einheit_label_mehrzahl": "Personen", "beschreibung": "Menge bitte in Personen angeben."},
+    {"id": "fonduefleisch-schwein", "kategorie": "schwein", "name": "Fonduefleisch vom Schwein", "beschreibung": "Mundgerecht geschnitten – rechnen Sie mit ca. 200 g pro Person.", "einheit": "kg", "min": 100, "schritt": 100, "max": 10000, "notiz_hinweis": "Für wie viele Personen?", "start": 400},
+    {"id": "kalbsschnitzel", "kategorie": "kalb", "name": "Kalbsschnitzel", "einheit": "stueck", "min": 1, "schritt": 1, "max": 40, "notiz_hinweis": "z. B. dünn geklopft"},
+    {"id": "fonduefleisch-kalb", "kategorie": "kalb", "name": "Fonduefleisch vom Kalb", "beschreibung": "Mundgerecht geschnitten – rechnen Sie mit ca. 200 g pro Person.", "einheit": "kg", "min": 100, "schritt": 100, "max": 10000, "notiz_hinweis": "Für wie viele Personen?", "start": 400},
+    {"id": "haehnchen", "kategorie": "gefluegel", "name": "Hähnchen", "einheit": "stueck", "min": 1, "schritt": 1, "max": 20, "notiz_hinweis": "Ganz oder zerlegt?"},
+    {"id": "ente", "kategorie": "gefluegel", "name": "Ente", "einheit": "stueck", "min": 1, "schritt": 1, "max": 20, "optionen": {"label": "Ausführung", "werte": ["ganze Ente", "Entenbrust", "Entenkeule"]}},
+    {"id": "gans", "kategorie": "gefluegel", "name": "Gans", "einheit": "stueck", "min": 1, "schritt": 1, "max": 20, "optionen": {"label": "Ausführung", "werte": ["ganze Gans", "Gänsebrust", "Gänsekeule"]}},
+    {"id": "puten-oberkeule", "kategorie": "gefluegel", "name": "Puten-Oberkeule", "einheit": "stueck", "min": 1, "schritt": 1, "max": 20},
+    {"id": "fonduefleisch-gefluegel", "kategorie": "gefluegel", "name": "Fonduefleisch vom Geflügel", "beschreibung": "Mundgerecht geschnitten – rechnen Sie mit ca. 200 g pro Person.", "einheit": "kg", "min": 100, "schritt": 100, "max": 10000, "notiz_hinweis": "Für wie viele Personen?", "start": 400},
+    {"id": "lammkeule", "kategorie": "lamm-wild", "name": "Lammkeule (ohne Knochen)", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000, "notiz_hinweis": "Für wie viele Personen?", "start": 1000},
+    {"id": "lammruecken", "kategorie": "lamm-wild", "name": "Lammrücken (ohne Knochen)", "einheit": "kg", "min": 250, "schritt": 250, "max": 10000, "notiz_hinweis": "Für wie viele Personen?", "start": 1000},
+    {"id": "lamm", "kategorie": "lamm-wild", "name": "Lamm, weitere Teilstücke", "einheit": "kg", "min": 100, "schritt": 250, "max": 10000, "notiz_hinweis": "Welches Teilstück? z. B. Gulasch, Haxe, Kotelett", "start": 500},
+    {"id": "wild", "kategorie": "lamm-wild", "name": "Wild", "einheit": "kg", "min": 100, "schritt": 250, "max": 10000, "optionen": {"label": "Wildart", "werte": ["Hirsch", "Reh", "Wildschwein", "Gams"]}, "notiz_hinweis": "Welches Teilstück? z. B. Keule, Rücken, Gulasch", "start": 500},
+    {"id": "kraeutersosse", "kategorie": "sossen", "name": "Kräutersoße", "einheit": "stueck", "min": 1, "schritt": 1, "max": 30, "einheit_label": "Becher", "optionen": {"label": "Bechergröße", "werte": ["150 g", "250 g", "500 g"]}},
+    {"id": "currysosse", "kategorie": "sossen", "name": "Currysoße", "einheit": "stueck", "min": 1, "schritt": 1, "max": 30, "einheit_label": "Becher", "optionen": {"label": "Bechergröße", "werte": ["150 g", "250 g", "500 g"]}},
+    {"id": "knoblauchsosse", "kategorie": "sossen", "name": "Knoblauchsoße", "einheit": "stueck", "min": 1, "schritt": 1, "max": 30, "einheit_label": "Becher", "optionen": {"label": "Bechergröße", "werte": ["150 g", "250 g", "500 g"]}},
+    {"id": "preiselbeer-meerrettich-sosse", "kategorie": "sossen", "name": "Preiselbeer-Meerrettich-Soße", "einheit": "stueck", "min": 1, "schritt": 1, "max": 30, "einheit_label": "Becher", "optionen": {"label": "Bechergröße", "werte": ["150 g", "250 g", "500 g"]}},
+    {"id": "chili-mango-sosse", "kategorie": "sossen", "name": "Chili-Mango-Soße", "einheit": "stueck", "min": 1, "schritt": 1, "max": 30, "einheit_label": "Becher", "optionen": {"label": "Bechergröße", "werte": ["150 g", "250 g", "500 g"]}},
+    {"id": "nudelsalat", "kategorie": "salate", "name": "Nudelsalat", "einheit": "kg", "min": 100, "schritt": 250, "max": 10000, "start": 250},
+    {"id": "krautsalat", "kategorie": "salate", "name": "Krautsalat", "einheit": "kg", "min": 100, "schritt": 250, "max": 10000, "start": 250},
+    {"id": "kartoffelsalat", "kategorie": "salate", "name": "Kartoffelsalat", "einheit": "kg", "min": 100, "schritt": 250, "max": 10000, "start": 250},
+    {"id": "fleischsalat", "kategorie": "salate", "name": "Fleischsalat", "einheit": "kg", "min": 100, "schritt": 250, "max": 10000, "start": 250},
+    {"id": "griebenschmalz", "kategorie": "salate", "name": "Griebenschmalz", "einheit": "stueck", "min": 1, "schritt": 1, "max": 20, "einheit_label": "Becher", "optionen": {"label": "Bechergröße", "werte": ["150 g", "250 g", "500 g"]}},
+    {"id": "garnelen-eingelegt", "kategorie": "salate", "name": "Garnelen, eingelegt", "einheit": "kg", "min": 100, "schritt": 100, "max": 3000, "start": 200},
+    {"id": "geschwollene", "kategorie": "wurst", "name": "Geschwollene", "einheit": "stueck", "min": 1, "schritt": 1, "max": 60},
+    {"id": "schweinsbratwurst", "kategorie": "wurst", "name": "Schweinsbratwurst", "einheit": "stueck", "min": 1, "schritt": 1, "max": 60},
+    {"id": "wiener", "kategorie": "wurst", "name": "Wiener", "einheit": "stueck", "min": 1, "schritt": 1, "max": 30, "einheit_label": "Paar"},
+    {"id": "weisswurst", "kategorie": "wurst", "name": "Weißwurst", "einheit": "stueck", "min": 1, "schritt": 1, "max": 60},
+    {"id": "debrecziner", "kategorie": "wurst", "name": "Debrecziner", "einheit": "stueck", "min": 1, "schritt": 1, "max": 30, "einheit_label": "Paar"},
+    {"id": "chiliwurst", "kategorie": "wurst", "name": "Chiliwurst", "einheit": "stueck", "min": 1, "schritt": 1, "max": 60},
+    {"id": "braetknoedel", "kategorie": "wurst", "name": "Brätknödel", "einheit": "stueck", "min": 1, "schritt": 1, "max": 60},
+    {"id": "leberknoedel", "kategorie": "wurst", "name": "Leberknödel", "einheit": "stueck", "min": 1, "schritt": 1, "max": 60},
+    {"id": "griessknoedel", "kategorie": "wurst", "name": "Grießknödel", "einheit": "stueck", "min": 1, "schritt": 1, "max": 60},
+    {"id": "maultaschen", "kategorie": "wurst", "name": "Maultaschen", "einheit": "stueck", "min": 1, "schritt": 1, "max": 60}
   ]
 }

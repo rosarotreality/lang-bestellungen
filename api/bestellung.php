@@ -66,15 +66,24 @@ function mengeText(array $p, int $menge): string
             ? rtrim(rtrim(number_format($menge / 1000, 3, ',', ''), '0'), ',') . ' kg'
             : $menge . ' g';
     }
-    return $menge . ' ' . ($p['einheit_label'] ?? 'Stück');
+    $label = ($menge !== 1 && !empty($p['einheit_label_mehrzahl'])) ? $p['einheit_label_mehrzahl'] : ($p['einheit_label'] ?? 'Stück');
+    return $menge . ' ' . $label;
 }
 
-/** Einfache Bremse gegen Massen-Anfragen, ohne IP-Adressen im Klartext zu speichern. */
-function limitPruefen(array $config): void
+/** Echte Besucher-IP. Hinter Coolify (Traefik) steht in REMOTE_ADDR nur die Proxy-Adresse;
+ *  Traefik hängt die echte IP als LETZTEN Eintrag an X-Forwarded-For an (frühere Einträge kann der Besucher fälschen). */
+function besucherIp(): string
 {
-    $max = (int) ($config['limit']['max'] ?? 5);
-    $fenster = (int) ($config['limit']['minuten'] ?? 10) * 60;
-    $schluessel = hash('sha256', ($_SERVER['REMOTE_ADDR'] ?? '') . '|' . __DIR__);
+    $kette = array_filter(array_map('trim', explode(',', (string) ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''))));
+    $letzte = $kette ? end($kette) : '';
+    return filter_var($letzte, FILTER_VALIDATE_IP) ? $letzte : (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+}
+
+/** Einfache Bremse gegen Massen-Anfragen, ohne IP- oder Mailadressen im Klartext zu speichern. */
+function limitPruefen(string $art, string $wert, int $max, int $minuten, string $meldung): void
+{
+    $fenster = $minuten * 60;
+    $schluessel = hash('sha256', $art . '|' . strtolower($wert) . '|' . __DIR__);
     $datei = sys_get_temp_dir() . '/lang-bestellung-' . substr($schluessel, 0, 32) . '.json';
 
     $fp = @fopen($datei, 'c+');
@@ -88,7 +97,7 @@ function limitPruefen(array $config): void
     if (count($zeiten) >= $max) {
         flock($fp, LOCK_UN);
         fclose($fp);
-        fehler(429, 'Von Ihrem Anschluss kamen gerade sehr viele Bestellungen. Bitte warten Sie ein paar Minuten.');
+        fehler(429, $meldung);
     }
     $zeiten[] = $jetzt;
     ftruncate($fp, 0);
@@ -104,6 +113,15 @@ function limitPruefen(array $config): void
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     header('Allow: POST');
     fehler(405, 'Nur POST-Anfragen erlaubt.');
+}
+
+if (stripos((string) ($_SERVER['CONTENT_TYPE'] ?? ''), 'application/json') !== 0) {
+    fehler(415, 'Ungültige Anfrage.');
+}
+$herkunft = (string) ($_SERVER['HTTP_ORIGIN'] ?? '');
+$host = (string) ($_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST'] ?? '');
+if ($herkunft !== '' && strcasecmp((string) parse_url($herkunft, PHP_URL_HOST), explode(':', $host)[0]) !== 0) {
+    fehler(403, 'Ungültige Anfrage.');
 }
 
 $roh = file_get_contents('php://input', false, null, 0, 32768);
@@ -162,15 +180,19 @@ foreach ($positionen as $pos) {
         fehler(422, 'Bitte prüfen Sie die Ausführung von „' . $p['name'] . '“.');
     }
     $menge = $pos['menge'] ?? null;
-    if (!is_int($menge) || $menge < $p['min'] || $menge > $p['max'] || ($menge - $p['min']) % $p['schritt'] !== 0) {
+    // Gewichtsware: Gramm frei wählbar (min–max). Stückware: nur in Schritten.
+    $schrittOk = $p['einheit'] === 'kg' || ($menge - $p['min']) % $p['schritt'] === 0;
+    if (!is_int($menge) || $menge < $p['min'] || $menge > $p['max'] || !$schrittOk) {
         fehler(422, 'Ungültige Menge bei „' . $p['name'] . '“.');
     }
+    $notiz = sauber($pos['notiz'] ?? '', 120);
     $preis = preisCent($p, $menge);
     $istCa = isset($p['preis_kg']);
     $zeilen[] = [
         'menge'  => mengeText($p, $menge),
         'name'   => $p['name'],
         'option' => $option,
+        'notiz'  => $notiz,
         'preis'  => $preis,
         'ca'     => $istCa,
         'nr'     => is_array($p['artikelnr'] ?? null) ? (string) ($p['artikelnr'][$option] ?? '') : (string) ($p['artikelnr'] ?? ''),
@@ -184,6 +206,8 @@ foreach ($positionen as $pos) {
 $kunde = [
     'vorname'  => sauber($eingabe['kunde']['vorname'] ?? '', 60),
     'nachname' => sauber($eingabe['kunde']['nachname'] ?? '', 60),
+    'strasse'  => sauber($eingabe['kunde']['strasse'] ?? '', 80),
+    'ort'      => sauber($eingabe['kunde']['ort'] ?? '', 60),
     'telefon'  => sauber($eingabe['kunde']['telefon'] ?? '', 30),
     'email'    => sauber($eingabe['kunde']['email'] ?? '', 120),
 ];
@@ -194,6 +218,12 @@ if ($kunde['vorname'] === '') {
 }
 if ($kunde['nachname'] === '') {
     $felder['nachname'] = 'Bitte geben Sie Ihren Nachnamen an.';
+}
+if ($kunde['strasse'] === '') {
+    $felder['strasse'] = 'Bitte geben Sie Straße und Hausnummer an.';
+}
+if ($kunde['ort'] === '') {
+    $felder['ort'] = 'Bitte geben Sie PLZ und Ort an.';
 }
 if (!preg_match('~^[0-9+()/\-\s]{6,30}$~', $kunde['telefon']) || strlen(preg_replace('/\D/', '', $kunde['telefon'])) < 6) {
     $felder['telefon'] = 'Bitte geben Sie eine gültige Telefonnummer an.';
@@ -207,6 +237,9 @@ if ($felder) {
 
 // --- Abholtermin ---
 $jetzt = new DateTimeImmutable('now', new DateTimeZone('Europe/Berlin'));
+if (Abholung::bestellschlussVorbei($shop['abholung'] ?? [], $jetzt)) {
+    fehler(410, 'Die Online-Bestellung ist leider bereits geschlossen. Bitte rufen Sie uns an.');
+}
 $datum = (string) ($eingabe['abholung']['datum'] ?? '');
 $zeit = (string) ($eingabe['abholung']['zeit'] ?? '');
 if (!in_array($zeit, Abholung::slots($shop['abholung'] ?? [], $datum, $jetzt), true)) {
@@ -216,7 +249,11 @@ if (!in_array($zeit, Abholung::slots($shop['abholung'] ?? [], $datum, $jetzt), t
 /* =========================================================
    3. Bestellung anlegen & versenden
    ========================================================= */
-limitPruefen($config);
+limitPruefen('ip', besucherIp(), (int) ($config['limit']['max'] ?? 5), (int) ($config['limit']['minuten'] ?? 10),
+    'Von Ihrem Anschluss kamen gerade sehr viele Bestellungen. Bitte warten Sie ein paar Minuten.');
+// Bremse pro Kunden-Mailadresse: verhindert, dass jemand fremde Postfächer mit Bestätigungen zuschüttet
+limitPruefen('mail', $kunde['email'], 3, 60,
+    'Für diese E-Mail-Adresse sind in der letzten Stunde schon mehrere Bestellungen eingegangen. Bitte rufen Sie uns an.');
 
 $zeichen = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 $code = '';

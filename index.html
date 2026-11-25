@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Online vorbestellen – Metzgerei Lang, Sonthofen</title>
-  <meta name="description" content="Fleisch- und Wurstwaren der Metzgerei Lang online vorbestellen und in Sonthofen abholen.">
-  <!-- Solange die Seite in Arbeit ist: nicht von Suchmaschinen indexieren. Zum Livegang entfernen. -->
-  <meta name="robots" content="noindex, nofollow">
+  <title>Weihnachtsbestellung – Metzgerei Lang, Sonthofen</title>
+  <meta name="description" content="Fleisch, Geflügel, Soßen und Salate für Weihnachten bei der Metzgerei Lang in Sonthofen online vorbestellen und im Laden abholen.">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
   <meta name="theme-color" content="#26211F">
   <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -19,13 +19,12 @@
     <a class="kopf__zurueck" href="https://lang-partyservice.de/" data-link="website">
       <span aria-hidden="true">←</span> Zur Website
     </a>
-    <a class="kopf__logo" href="https://lang-partyservice.de/" data-link="website" aria-label="Metzgerei Lang – zur Website">
-      <!-- PLATZHALTER: Logo der Metzgerei als assets/logo.gif ablegen (von lang-partyservice.de). -->
-      <img src="assets/logo.gif" alt="Metzgerei Lang Partyservice" width="180" height="137"
-           onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+    <a class="kopf__logo" href="https://lang-partyservice.de/" data-link="website" aria-label="Metzgerei Lang Partyservice – zur Website">
+      <img src="assets/logo-600.png" srcset="assets/logo-600.png 600w, assets/logo.png 1200w" sizes="250px"
+           alt="Metzgerei Lang Partyservice" width="600" height="357" id="logo">
       <span class="kopf__wortmarke" hidden>Metzgerei <strong>LANG</strong></span>
     </a>
-    <p class="kicker kopf__tagline">Sonthofen im Allgäu · seit 1938</p>
+    <p class="kopf__adresse" id="kopf-adresse">Berghofer Str. 14 · 87527 Sonthofen · Tel. 08321 2407</p>
   </div>
 </header>
 
@@ -41,17 +40,18 @@
     <div class="wrap">
       <div class="hero">
         <div class="hero__text">
-          <p class="kicker kicker--hell">Metzgerei Lang</p>
-          <h1 id="titel-sortiment">Online vorbestellen</h1>
+          <p class="kicker kicker--hell">Weihnachten 2026</p>
+          <h1 id="titel-sortiment">Ihre Weihnachts&shy;bestellung</h1>
           <span class="balken" aria-hidden="true"></span>
-          <p>Stellen Sie sich Ihre Bestellung aus unserer Theke zusammen und holen Sie sie zum Wunschtermin bei uns im Laden ab – frisch für Sie hergerichtet.</p>
+          <p>Stellen Sie sich Ihren Festtagsbraten, Geflügel, Soßen und Salate bequem online zusammen und holen Sie alles zum Wunschtermin bei uns im Laden ab – frisch für Sie hergerichtet.</p>
         </div>
         <ol class="hero__schritte">
-          <li><span>1</span><div><strong>Auswählen</strong><small>Fleisch, Wurst &amp; Feinkost in den Warenkorb legen</small></div></li>
+          <li><span>1</span><div><strong>Auswählen</strong><small>Fleisch, Geflügel, Soßen &amp; Salate in den Warenkorb legen</small></div></li>
           <li><span>2</span><div><strong>Termin wählen</strong><small>Abholtag und Uhrzeit festlegen</small></div></li>
           <li><span>3</span><div><strong>Abholen</strong><small>im Laden in Sonthofen – bezahlt wird vor Ort</small></div></li>
         </ol>
       </div>
+      <div class="hinweise" id="hinweise" hidden></div>
     </div>
 
     <nav class="kategorien" aria-label="Kategorien">
@@ -116,6 +116,16 @@
               <small class="feldfehler" hidden></small>
             </label>
             <label class="feld">
+              <span>Straße und Hausnummer *</span>
+              <input name="strasse" autocomplete="street-address" maxlength="80" required>
+              <small class="feldfehler" hidden></small>
+            </label>
+            <label class="feld">
+              <span>PLZ und Ort *</span>
+              <input name="ort" autocomplete="address-level2" maxlength="60" required>
+              <small class="feldfehler" hidden></small>
+            </label>
+            <label class="feld">
               <span>Telefon * <em>für Rückfragen</em></span>
               <input name="telefon" type="tel" autocomplete="tel" maxlength="30" required>
               <small class="feldfehler" hidden></small>
@@ -127,7 +137,7 @@
             </label>
             <label class="feld feld--breit">
               <span>Anmerkung <em>optional</em></span>
-              <textarea name="anmerkung" rows="3" maxlength="500" placeholder="z. B. Steaks bitte 3 cm dick schneiden"></textarea>
+              <textarea name="anmerkung" rows="3" maxlength="500" placeholder="Weitere Wünsche zu Ihrer Bestellung"></textarea>
               <small class="feldfehler" hidden></small>
             </label>
             <!-- Spam-Schutz: Dieses Feld bleibt für Menschen unsichtbar und leer. -->

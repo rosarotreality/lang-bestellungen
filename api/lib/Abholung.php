@@ -21,16 +21,29 @@ final class Abholung
             return [];
         }
 
-        $start = $jetzt->setTime(0, 0);
-        if (!empty($cfg['erster_abholtag'])) {
-            $erster = DateTimeImmutable::createFromFormat('!Y-m-d', (string) $cfg['erster_abholtag'], $tz);
-            if ($erster && $erster > $start) {
-                $start = $erster;
+        $feste = (isset($cfg['abholtage']) && is_array($cfg['abholtage']) && $cfg['abholtage']) ? $cfg['abholtage'] : null;
+        $eigeneZeiten = null;
+
+        if ($feste !== null) {
+            // Nur die festgelegten Abholtage sind buchbar
+            if (!array_key_exists($datumIso, $feste)) {
+                return [];
             }
-        }
-        $ende = $start->modify('+' . (int) ($cfg['tage_im_voraus'] ?? 14) . ' days');
-        if ($tag < $start || $tag > $ende) {
-            return [];
+            if (is_array($feste[$datumIso]) && $feste[$datumIso]) {
+                $eigeneZeiten = $feste[$datumIso];
+            }
+        } else {
+            $start = $jetzt->setTime(0, 0);
+            if (!empty($cfg['erster_abholtag'])) {
+                $erster = DateTimeImmutable::createFromFormat('!Y-m-d', (string) $cfg['erster_abholtag'], $tz);
+                if ($erster && $erster > $start) {
+                    $start = $erster;
+                }
+            }
+            $ende = $start->modify('+' . (int) ($cfg['tage_im_voraus'] ?? 14) . ' days');
+            if ($tag < $start || $tag > $ende) {
+                return [];
+            }
         }
         if (in_array($datumIso, $cfg['geschlossen'] ?? [], true)) {
             return [];
@@ -41,7 +54,7 @@ final class Abholung
         $slot = max(5, (int) ($cfg['slot_minuten'] ?? 30));
 
         $slots = [];
-        foreach ($cfg['oeffnungszeiten'][$wt] ?? [] as $intervall) {
+        foreach ($eigeneZeiten ?? ($cfg['oeffnungszeiten'][$wt] ?? []) as $intervall) {
             [$von, $bis] = $intervall;
             for ($t = self::minuten($von); $t + $slot <= self::minuten($bis); $t += $slot) {
                 $zeitpunkt = $tag->setTime(intdiv($t, 60), $t % 60);
@@ -51,6 +64,16 @@ final class Abholung
             }
         }
         return $slots;
+    }
+
+    /** Ist der Bestellschluss (z. B. "2026-12-20T12:00", deutsche Zeit) vorbei? */
+    public static function bestellschlussVorbei(array $cfg, DateTimeImmutable $jetzt): bool
+    {
+        if (empty($cfg['bestellschluss'])) {
+            return false;
+        }
+        $schluss = new DateTimeImmutable((string) $cfg['bestellschluss'], $jetzt->getTimezone());
+        return $jetzt > $schluss;
     }
 
     /** "Dienstag, 1. Dezember 2026" */

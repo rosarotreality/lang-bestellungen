@@ -28,7 +28,7 @@ final class Vorlagen
         // ---- Text ----
         $t = "NEUE BESTELLUNG {$b['nummer']}\n" . str_repeat('=', 44) . "\n\n";
         $t .= 'Abholung:  ' . Abholung::datumLang($b['datum']) . ", {$b['zeit']} Uhr\n\n";
-        $t .= "Kunde:     $name\nTelefon:   {$k['telefon']}\nE-Mail:    {$k['email']}\n\n";
+        $t .= "Kunde:     $name\nAdresse:   {$k['strasse']}, {$k['ort']}\nTelefon:   {$k['telefon']}\nE-Mail:    {$k['email']}\n\n";
         $t .= "Positionen:\n" . self::textPositionen($b, true);
         if ($b['anmerkung'] !== '') {
             $t .= "\nAnmerkung des Kunden:\n" . $b['anmerkung'] . "\n";
@@ -42,6 +42,7 @@ final class Vorlagen
             . self::abschnitt('Kunde')
             . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-family:' . self::SANS . ';font-size:15px;color:' . self::TEXT . ';">'
             . self::datenZeile('Name', '<strong>' . self::e($name) . '</strong>')
+            . self::datenZeile('Adresse', self::e($k['strasse']) . '<br>' . self::e($k['ort']))
             . self::datenZeile('Telefon', '<a href="tel:' . self::e($tel) . '" style="color:' . self::ROT . ';">' . self::e($k['telefon']) . '</a>')
             . self::datenZeile('E-Mail', '<a href="mailto:' . self::e($k['email']) . '" style="color:' . self::ROT . ';">' . self::e($k['email']) . '</a>')
             . '</table>'
@@ -115,6 +116,9 @@ final class Vorlagen
             if ($z['option'] !== '') {
                 $t .= '  ' . str_repeat(' ', 11) . '→ ' . $z['option'] . "\n";
             }
+            if (($z['notiz'] ?? '') !== '') {
+                $t .= '  ' . str_repeat(' ', 11) . '→ Notiz: ' . $z['notiz'] . "\n";
+            }
         }
         if (!$b['mit_preisen']) {
             return $t;
@@ -130,15 +134,17 @@ final class Vorlagen
         $td = 'font-family:' . self::SANS . ';font-size:15px;color:' . self::TEXT . ';padding:11px 8px 11px 0;border-bottom:1px solid ' . self::LINIE . ';vertical-align:top;';
         $h = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">';
         $mitPreis = $b['mit_preisen'];
-        $h .= '<tr><th ' . $th . '>Menge</th>' . ($abhaken ? '<th ' . $th . '>Nr.</th>' : '') . '<th ' . str_replace('style="', 'style="width:60%;', $th) . '>Artikel</th>'
+        $mitNr = $abhaken && (bool) array_filter($b['zeilen'], fn ($z) => ($z['nr'] ?? '') !== '');
+        $h .= '<tr><th ' . $th . '>Menge</th>' . ($mitNr ? '<th ' . $th . '>Nr.</th>' : '') . '<th ' . str_replace('style="', 'style="width:60%;', $th) . '>Artikel</th>'
             . ($mitPreis ? '<th ' . str_replace('text-align:left', 'text-align:right', $th) . '>Preis</th>' : '')
             . ($abhaken ? '<th ' . str_replace('padding:0 8px 8px 0', 'padding:0 0 8px 8px', $th) . ' width="22">✓</th>' : '') . '</tr>';
         foreach ($b['zeilen'] as $z) {
             $h .= '<tr>'
                 . '<td style="' . $td . 'white-space:nowrap;font-weight:bold;color:' . self::DUNKEL . ';">' . self::e($z['menge']) . '</td>'
-                . ($abhaken ? '<td style="' . $td . 'white-space:nowrap;color:' . self::BRAUN . ';">' . self::e($z['nr']) . '</td>' : '')
+                . ($mitNr ? '<td style="' . $td . 'white-space:nowrap;color:' . self::BRAUN . ';">' . self::e($z['nr']) . '</td>' : '')
                 . '<td style="' . $td . '">' . self::e($z['name'])
-                . ($z['option'] !== '' ? '<br><span style="font-size:13px;color:' . self::BRAUN . ';">' . self::e($z['option']) . '</span>' : '') . '</td>'
+                . ($z['option'] !== '' ? '<br><span style="font-size:13px;color:' . self::BRAUN . ';">' . self::e($z['option']) . '</span>' : '')
+                . (($z['notiz'] ?? '') !== '' ? '<br><span style="font-size:13px;color:' . self::DUNKEL . ';background:' . self::SAND . ';padding:1px 5px;"><b>Notiz:</b> ' . self::e($z['notiz']) . '</span>' : '') . '</td>'
                 . ($mitPreis ? '<td style="' . $td . 'text-align:right;white-space:nowrap;">' . self::preis($z) . '</td>' : '')
                 . ($abhaken ? '<td style="' . $td . 'padding-left:8px;padding-right:0;"><div style="width:16px;height:16px;border:1.5px solid ' . self::BRAUN . ';"></div></td>' : '')
                 . '</tr>';
@@ -146,7 +152,7 @@ final class Vorlagen
         if (!$mitPreis) {
             return $h . '</table>';
         }
-        $h .= '<tr><td colspan="' . ($abhaken ? 3 : 2) . '" style="font-family:' . self::SANS . ';font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:' . self::BRAUN . ';padding:14px 8px 0 0;">Summe' . ($b['ca'] ? ' (ca.)' : '') . '</td>'
+        $h .= '<tr><td colspan="' . ($mitNr ? 3 : 2) . '" style="font-family:' . self::SANS . ';font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:' . self::BRAUN . ';padding:14px 8px 0 0;">Summe' . ($b['ca'] ? ' (ca.)' : '') . '</td>'
             . '<td style="font-family:' . self::SERIF . ';font-size:21px;font-weight:bold;color:' . self::DUNKEL . ';text-align:right;white-space:nowrap;padding:10px 8px 0 0;">' . self::euro($b['summe']) . '</td>'
             . ($abhaken ? '<td></td>' : '') . '</tr>';
         return $h . '</table>';
